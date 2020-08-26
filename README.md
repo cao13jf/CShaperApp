@@ -1,20 +1,21 @@
 ## CShaper
 
 ### Parameters
-* All parameters are saved in `./ConfigMemb/test_edt_discrete.txt`, which is read into `./test_edt.py` through 
+* All parameters are saved in `./ConfigMemb/test_edt_discrete.txt`, which is read by `./test_edt.py` through 
     ```python
     config = parse_config(config_file)  # inside the `./test_edt.py`
     ```
-    For the GUI app, could you please try to read all paras interactively instead of reading the file? It means that 
-    you may need to design the `*.ui` file by adding or deleting components. 
+    For the GUI app, you may need to read all paras interactively instead of reading the file. It means that 
+    you need to design the `*.ui` file by adding or deleting components. 
     
 * Please note that the parameter `data_names` is a multi-choice which lists all 1th-level folder names under `data_folder`.
-For example, in the example data, `data_names` should be `181210plc1p1` / `181210plc1p2` / `181210plc1p3`.
+For example, in the following example data, `data_names` should be `181210plc1p1` / `181210plc1p2` / `181210plc1p3`, from which
+the user can choose one or multiple embryos.
     
 ### Example data
-* The example can be download with this [link](https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_ad_cityu_edu_hk/Eom4A33IiDlCndQecHMFOUIBTgXmkK_5RRDdNuMlYKWLUg?e=6UKQxn), 
-which includes three embryos. Please put `./ExampleData` and `./ModelCell` to the same root folder as this code repository. 
-The template settings should be
+* The example data can be downloaded with this [link](https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_ad_cityu_edu_hk/Eom4A33IiDlCndQecHMFOUIBTgXmkK_5RRDdNuMlYKWLUg?e=6UKQxn), 
+which includes three embryos. Please put `./ExampleData` to the same root folder as this code repository. 
+The template parameter settings for this data should be
     ```text
     [para]
     
@@ -34,9 +35,10 @@ The template settings should be
     ```
 
 ### How to test the functionality
-1. Download 1). `Example data` to `./`; 2). these files to `./ShapeUtil/`; 3). train model to `./ModelCell/` So the final folder stucture should be 
+1. Download 1). `Example data` to `./`; 2). these [files](https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_ad_cityu_edu_hk/Er7DRPjxdBRGrwB7X3L7yS0B9j5FPlmUCW9ahDLOa1qW9w?e=Ig6g9b) to `./ShapeUtil/`; 
+3). trained [model](https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_ad_cityu_edu_hk/EvuLuIAH7u5FteDDcitG7eYB0QIlZoXD_keas05ENqMYvw?e=l8O6na) to `./ModelCell/` So the final folder structure should be 
     ```text
-    CShaperGUI/: code root folder
+    CShaperApp/: code root folder
        |--ExampleData/: example data downloaded from the link
            |--181210plc1p1/: 1st embryo folder
                |******
@@ -50,7 +52,7 @@ The template settings should be
            |--number_dictionary.csv
            |--number_dictionary.txt
            |--******
-       |--*** : (some folders that can be cloned from the repositories are not listed here)
+       |--*** : (some folders that can be cloned from this repository are not listed here)
     ```
 2. Inside the GUI app, `test_edt.py` and `shape_analysis.py` should be able to run consecutively after receiving the 
-parameters. 
+parameters. s
