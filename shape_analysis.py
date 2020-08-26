@@ -44,7 +44,7 @@ def run_shape_analysis(config):
     ## Parallel computing for the cell relation graph
     if not os.path.isdir('./ShapeUtil/TemCellGraph'):
         os.makedirs('./ShapeUtil/TemCellGraph')
-    with open('./ShapeUtil/number_dictionary.txt', 'rb') as f:
+    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
         number_dict = pickle.load(f)
 
     # ========================================================
@@ -55,7 +55,7 @@ def run_shape_analysis(config):
     configs = []
     config["cell_tree"] = cell_tree
     for itime in tqdm(range(1, max_time+1), desc="Compose configs"):
-        config['time_point']=itime
+        config['time_point'] = itime
         configs.append(config.copy())
     #     cell_graph_network(file_lock, config)
     for _ in tqdm(mpPool.imap_unordered(cell_graph_network, configs), total=len(configs), desc="Naming {} segmentations".format(embryo_name)):
@@ -101,9 +101,9 @@ def cell_graph_network(config):
 
 
     #  Load the dictionary of cell and it's coresponding number in the dictionary
-    with open('./ShapeUtil/number_dictionary.txt', 'rb') as f:
+    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
         number_dict = pickle.load(f)
-    with open('./ShapeUtil/name_dictionary.txt', 'rb') as f:
+    with open(os.path.join(config["label_dict"], 'name_dictionary.txt'), 'rb') as f:
         name_dict = pickle.load(f)
 
     ## unify the labels in the segmentation and that in the aceTree information
@@ -124,7 +124,7 @@ def cell_graph_network(config):
         point_graph.add_node(cell_name, pos=nucleus_loc[nucleus_loc.nucleus_name==cell_name].iloc[:, 2:5].values[0].tolist())
     #  add connections between SegCell (edge and edge weight)
 
-    relation_graph = add_relation(point_graph, division_seg)
+    relation_graph = add_relation(point_graph, division_seg, name_dict)
 
     # nx.draw(relation_graph, pos=nuc_position, with_labels=True, node_size=100, font_color='b', edge_cmap=plt.cm.Blues)  # TODO: better visualization on graph
     file_name = os.path.join('./ShapeUtil/TemCellGraph', config['embryo_name'], config['embryo_name'] + '_T' + str(config['time_point']) + '.txt')
@@ -141,9 +141,9 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
     :return unify_seg: cell segmentation with labels unified
     :return nuc_positions: nucleus positions with labels
     '''
-    with open('./ShapeUtil/number_dictionary.txt', 'rb') as f:
+    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
         number_dict = pickle.load(f)
-    with open('./ShapeUtil/name_dictionary.txt', 'rb') as f:
+    with open(os.path.join(config["label_dict"], 'name_dictionary.txt'), 'rb') as f:
         name_dict = pickle.load(f)
     cell_tree = config["cell_tree"]
 
@@ -187,14 +187,14 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
         update_flag = changed_flag[nucleus_loc[0], nucleus_loc[1], nucleus_loc[2]]
         if raw_label != 0:
             if not update_flag:
-                unify_seg[seg==raw_label] = target_label
+                unify_seg[seg == raw_label] = target_label
                 changed_flag[seg==raw_label] = 1
                 # add volume and surface information
                 surface_area = get_surface_area(seg == raw_label)
-                nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == target_label, "volume"] = (seg == raw_label).sum()
-                nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == target_label, "surface"] = surface_area
+                nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == target_label, "volume"] = (seg == raw_label).sum() * (config["res"] ** 3)
+                nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == target_label, "surface"] = surface_area * (config["res"] ** 2)
             else:
-                # change whether two labels from the same mother
+                # check whether two labels from the same mother
                 another_label = unify_seg[nucleus_loc[0], nucleus_loc[1], nucleus_loc[2]]
                 another_mother_name = cell_tree.parent(name_dict[another_label]).tag
                 mother_name = cell_tree.parent(name_dict[target_label]).tag
@@ -213,8 +213,8 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
                             "note": "mother"
                         }, ignore_index=True)
                         surface_area = get_surface_area(seg == raw_label)
-                        nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == mother_label, "volume"] = (seg == raw_label).sum()
-                        nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == mother_label, "surface"] = surface_area
+                        nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == mother_label, "volume"] = (seg == raw_label).sum() * (config["res"] ** 3)
+                        nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == mother_label, "surface"] = surface_area * (config["res"] ** 2)
                         # update daughter SegCell information
                         nucleus_loc_to_save = update_daughter_info(nucleus_loc_to_save, ch1, ch2, mother_name)
                         update_time_tree(config['embryo_name'], mother_name, time_point, file_lock, add=True)
@@ -265,16 +265,13 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
     return unify_seg, nuc_positions
 
 
-def add_relation(point_graph, division_seg):
+def add_relation(point_graph, division_seg, name_dict):
     '''
     Add relationship information between SegCell. (contact surface area)
     :param point_graph: point graph of SegCell
     :param division_seg: cell segmentations
     :return point_graph: contact graph between cells
     '''
-    #  use translation on pixel on three directions to get the the contact area
-    with open('./ShapeUtil/name_dictionary.txt', 'rb') as f:
-        name_dict = pickle.load(f)
     if np.unique(division_seg).shape[0] > 2:  # in case there are multiple cells
         contact_pairs, contact_area = get_contact_area(division_seg)
         for i, one_pair in enumerate(contact_pairs):
@@ -478,13 +475,19 @@ if __name__ == '__main__':
     config = parse_config(config_file)
     # Construct folder
     para_config = config['para']
+    para_config["cdfile_folder"] = para_config["data_folder"]
+    para_config["save_nucleus_folder"] = os.path.join(para_config["save_folder", "NucleusLoc"])
+    para_config["seg_folder"] = os.path.join(para_config["save_folder"], "BinaryMembPostseg")
+    para_config["save_folder"] = os.path.join(para_config["save_folder"], "StatShape")
+    para_config["delete_tem_file"] = False
+
     if not os.path.isdir(para_config['save_folder']):
         os.makedirs(para_config['save_folder'])
 
     embryo_names = para_config["embryo_names"]
     for embryo_name in embryo_names:
         para_config["embryo_name"] = embryo_name
-        para_config["acetree_file"] = os.path.join("./Data/MembTest", para_config['embryo_name'], "CD" + para_config['embryo_name']+".csv")
+        para_config["acetree_file"] = os.path.join(para_config["cdfile_folder"], para_config['embryo_name'], "CD" + para_config['embryo_name']+".csv")
         if not os.path.isdir(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name'])):
             os.makedirs(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
         else:

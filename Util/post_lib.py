@@ -52,7 +52,6 @@ def line_weight_integral(x0, x1, weight_volume):
 
     return line_weight
 
-
 def construct_weighted_graph(bin_image, local_max_h = 2):
     '''
     Construct edge weight graph from binary image.
@@ -88,7 +87,7 @@ def construct_weighted_graph(bin_image, local_max_h = 2):
     for i in range(len(b_indx)):
         for j in range(i, len(b_indx)):
             one_point = b_indx[i]
-            another_point = b_indx[j]
+            another_point = b_indx[j]  #
             if ([one_point, another_point] in edge_list) or ([another_point, one_point] in edge_list):
                 continue
             edge_list.append([one_point, another_point])

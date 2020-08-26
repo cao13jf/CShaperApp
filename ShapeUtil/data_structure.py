@@ -42,7 +42,7 @@ def construct_celltree(nucleus_file, config):
     # read and combine all names from different acetrees
     ## Get cell number
     try:
-        with open('./ShapeUtil/number_dictionary.txt', 'rb') as f:
+        with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
             number_dictionary = pickle.load(f)
     except:
         ace_files = glob.glob('./ShapeUtil/AceForLabel/*.csv')
@@ -53,9 +53,9 @@ def construct_celltree(nucleus_file, config):
             cell_list = list(set(cell_list))
         cell_list.sort()
         number_dictionary = dict(zip(cell_list, range(1, len(cell_list)+1)))
-        with open('./ShapeUtil/number_dictionary.txt', 'wb') as f:
+        with open(os.path.join(config["label_dict"],'number_dictionary.txt'), 'wb') as f:
             pickle.dump(number_dictionary, f)
-        with open('./ShapeUtil/name_dictionary.txt', 'wb') as f:
+        with open(os.path.join(config["label_dict"], 'name_dictionary.txt'), 'wb') as f:
             pickle.dump(dict(zip(range(1, len(cell_list)+1), cell_list)), f)
 
     max_time = config.get('max_time', 100)

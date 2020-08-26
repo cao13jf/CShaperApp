@@ -17,6 +17,48 @@ def test(config_file):
     #               1, Load configuration parameters
     #=============================================================
     config = parse_config(config_file)
+
+    # # fix some parameters for off-the-shelf testing file
+    config["data"]["data_folder"] = config["para"]["data_folder"]
+    config["data"]["data_names"] = config["para"]["embryo_names"]
+    config["data"]["max_time"] = config["para"]["max_time"]
+    config["data"]["save_folder"] = config["para"]["save_folder"]
+
+    config["data"]["with_ground_truth"] = False
+    config["data"]["label_edt_transform"] = True
+    config["data"]["valid_edt_width"] = 30
+    config["data"]["label_edt_discrete"] = True
+    config["data"]["edt_discrete_num"] = 16
+    config["data"]["save_folder"] = os.path.join(config["data"]["save_folder"], "BinaryMemb")
+
+    config["network"]["net_type"] = "DMapNet"
+    config["network"]["net_name"] = "DMapNet_PUB"
+    config["network"]["data_shape"] = [24, 128, 96, 1]
+    config["network"]["label_shape"] = [16, 128, 96, 1]
+    config["network"]["model_file"] = "ModelCell/DMapNet_PUB_5000.ckpt"
+
+    config["testing"]["batch_size"] = config["paras"]["batch_size"]
+    config["testing"]["nucleus_as_seeds"] = config["paras"]["nucleus_as_seeds"]
+    config["testing"]["nucleus_filter"] = config["paras"]["nucleus_filter"]
+
+    config["testing"]["save_binary_seg"] = True
+    config["testing"]["save_predicted_map"] = False
+    config["testing"]["slice_direction"] = "sagittal"
+    config["testing"]["direction_fusion"] = True
+    config["testing"]["only_post_process"] = False
+    config["testing"]["post_process"] = True
+
+    config["segdata"]["membseg_path"] = os.path.dirname(config["data"]["save_folder"])
+    config["segdata"]["nucleus_data_root"] = config["data"]["data_folder"]
+
+    config["debug"]["debug_mode"] = False
+    config["debug"]["save_anisotropic"] = False
+    config["debug"]["save_graph_model"] = False
+    config["debug"]["save_init_watershed"] = False
+    config["debug"]["save_merged_seg"] = False
+    config["debug"]["save_cell_nomemb"] = False
+
+    # group parameters
     config_data = config['data']
     config_net = config.get('network', None)
     config_test = config['testing']
@@ -40,10 +82,6 @@ def test(config_file):
         net.set_params(config_net)
 
         net_output = net(input_x, is_training=True)
-        if (label_edt_discrete):
-            net_result = tf.nn.softmax(net_output)
-        else:
-            net_result = net_output
 
         # ==============================================================
         #               3, Data loader
@@ -172,5 +210,5 @@ if __name__ == '__main__':
         raise Exception("Invalid number of inputs")
     config_file = str(sys.argv[1])
     assert (os.path.isfile(config_file))
-    test(config_file)
+    test(config_file)  # < ----- input parameters here
 

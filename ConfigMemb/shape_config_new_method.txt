@@ -1,6 +1,6 @@
 
 [para]
-image_size = [70, 712, 512]
+image_size = [92, 712, 512]
 #   If True, new name dictionary will be generated
 frist_run = False
 
@@ -11,11 +11,14 @@ frist_run = False
 # # [155]: 200314plc1p2
 # # [150]: 200314plc1p1, 181210plc1p3
 
-embryo_names = [181210plc1p3]
+embryo_names = [200113plc1p2]
+res = 0.25
 # The maximum time point used for the referred embryo to construct the cell_tree with specific number of cells.
-max_time = 150
+max_time = 260
 delete_tem_file = False
-seg_folder = ./ResultCell/BinaryMembPostseg
-cdfile_folder = ./Data/MembTest
-save_folder = ./ResultCell/StatShape
-save_nucleus_folder = ./ResultCell/NucleusLoc
+seg_folder = /home/jeff/ProjectCode/LearningCell/MembProjectCode/output
+
+label_dict = /home/jeff/ProjectCode/LearningCell/MembProjectCode/dataset
+cdfile_folder = /home/jeff/ProjectCode/LearningCell/MembProjectCode/dataset/test
+save_folder = /home/jeff/ProjectCode/LearningCell/MembProjectCode/ResultCell/StatShape
+save_nucleus_folder = /home/jeff/ProjectCode/LearningCell/MembProjectCode/ResultCell/NucleusLoc

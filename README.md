@@ -1,56 +1,56 @@
 ## CShaper
 
-Implementation of DMapNet in *Establishment of morphological atlas of Caenorhabditis elegans embryo using deep-learning-based 4D
- segmentation*, by Jianfeng Cao*, Guoye Guan*, Vincy Wing Sze Ho*, Ming-Kin Wong, Lu-Yan Chan, Chao Tang, Zhongying Zhao, & Hong Yan.
+### Parameters
+* All parameters are saved in `./ConfigMemb/test_edt_discrete.txt`, which is read into `./test_edt.py` through 
+    ```python
+    config = parse_config(config_file)  # inside the `./test_edt.py`
+    ```
+    For the GUI app, could you please try to read all paras interactively instead of reading the file? It means that 
+    you may need to design the `*.ui` file by adding or deleting components. 
+    
+* Please note that the parameter `data_names` is a multi-choice which lists all 1th-level folder names under `data_folder`.
+For example, in the example data, `data_names` should be `181210plc1p1` / `181210plc1p2` / `181210plc1p3`.
+    
+### Example data
+* The example can be download with this [link](https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_ad_cityu_edu_hk/Eom4A33IiDlCndQecHMFOUIBTgXmkK_5RRDdNuMlYKWLUg?e=6UKQxn), 
+which includes three embryos. Please put `./ExampleData` and `./ModelCell` to the same root folder as this code repository. 
+The template settings should be
+    ```text
+    [para]
+    
+    # segmentation
+    data_folder         = Data/MembTest
+    embryo_names        = [181210plc1p1, 181210plc1p2, 181210plc1p3]  # should list all embryos in the folder
+    max_time            = 150
+    save_folder         = ResultCell
+    batch_size          = 2
+    nucleus_as_seeds    = False
+    nucleus_filter      = True
+    
+    # shape analysis
+    image_size          = [68, 712, 512]
+    first_run           = False
+    analysis_embryo_names        = [181210plc1p3]
+    ```
 
-\* denotes equal contribution
-
-### Usage
-This implementation is based on Tensorflow and python3.6, trained with one GPU NVIDIA 2080Ti on Linux. Steps for training
-and testing are listed as below.
-* **Intsall dependency library**:
-```buildoutcfg
-    pip install requirements.txt
-```
-* **Train**: Download the data from this link (TBD) and put it into `./Data` folder, Set parameters
-in `./ConfigMemb/train_edt_discrete.txt`, then run
-    ```buildoutcfg
-    python train.py ./ConfigMemb/train_edt_discrete.txt
+### How to test the functionality
+1. Download 1). `Example data` to `./`; 2). these files to `./ShapeUtil/`; 3). train model to `./ModelCell/` So the final folder stucture should be 
+    ```text
+    CShaperGUI/: code root folder
+       |--ExampleData/: example data downloaded from the link
+           |--181210plc1p1/: 1st embryo folder
+               |******
+           |--181210plc1p2/: 2nd embryo folder
+               |******
+           |--*****
+       |--ModelCell/: trained model
+           |--*.cpkt
+           |--*****
+       |--ShapeUtil/:
+           |--number_dictionary.csv
+           |--number_dictionary.txt
+           |--******
+       |--*** : (some folders that can be cloned from the repositories are not listed here)
     ```
-* **Test**: Put the raw data (membane and nucleus stack, and CD files from [AceTree](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1501046/))
-into `./Data/MembValidation/`. Example data is also available through previous data link. Set parameters in 
-`./ConfigMemb/test_edt_discrete.txt` and run
-    ```buildoutcfg
-    python test_edt.py ./ConfigMemb/test_edt_discrete.txt
-    ```
-    Then binary membrane and initial segmented cell are saved in `./ResultCell/BothWithRandomnet` and
-    `BothWithRandomnetPostseg`, respectively. To unify the label of cell based on AceTree file,
-    run 
-    ```buildoutcfg
-    python shape_analysis.py ./ConfigMemb/shape_config.txt
-    ```
-    The pretrained model is avaliale on [Google Drive](https://drive.google.com/file/d/1ZwKKqAwVWr8YGGtdal-ZVxodyE7PUnb6/view?usp=sharing). Please unzip the file and put them into folder `./ModelCell`.
-* **Structure of folders**: (Folders and files in `.gitignore` are not shown in this repository)
-    ```buildoutcfg
-    DMapNet is used to segmented membrane stack of C. elegans at cellular level
-    DMapNet/
-      |--ConfigMemb/: parameters for training, testing and unifying label
-      |--Data/: raw membrane, raw nucleus and AceTree file (CD**.csv)
-          |--MembTraining/: image data with manual annotations
-          |--MembValidation/: image data to be segmented
-      |--ModelCell/: trained models 
-      |--ResultCell/: Segmentation result
-          |--BothWithRandomnet/: Binary membrane segmentation from DMapNet
-          |--BothWithRandomnetPostseg/: segmented cell before and after label unifying
-          |--NucleusLoc/: nucleus location information and annotation
-          |--StatShape/: cell lineage tree (with time duration)
-      |--ShapeUtil/: utils for unifying cells and calculating robustness
-          |--AceForLabel/: multiple AceTree files for generating namedictionary
-          |--RobustStat/: nucleus lost sration and cell surface...
-          |--TemCellGraph/: temporary result for calculating surface, volume...
-      |--Util/: utils for training and testing
-    ```
-### Acknowledgement
-We referred to these repositories when implementing the code,
-* [brats17](https://github.com/taigw/brats17)
-* [NiftyNet](https://github.com/NifTK/NiftyNet)
+2. Inside the GUI app, `test_edt.py` and `shape_analysis.py` should be able to run consecutively after receiving the 
+parameters. 
