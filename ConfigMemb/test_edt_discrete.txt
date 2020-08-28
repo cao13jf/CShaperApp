@@ -27,5 +27,5 @@ nucleus_filter      = True
 # <-- raw_folder          = ./Data/MembRaw
 # <-- embryo_names        = [181210plc1p3]
 # <-- stack_folder        = Data/MembTest
-first_run           = False
+first_run                 = False
 

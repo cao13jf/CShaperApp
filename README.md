@@ -1,10 +1,9 @@
 ## CShaper
 
 ### Parameters
-* All parameters are saved in `./ConfigMemb/test_edt_discrete.txt`, which is read by `./test_edt.py` through 
-    ```python
-    config = parse_config(config_file)  # inside the `./test_edt.py`
-    ```
+* All parameters are saved in `./ConfigMemb/test_edt_discrete.txt`, which is read by `./combine_slice.py`, `./test_edt.py`
+or `./shape_analysis.py` with `configparser` library. 
+
     For the GUI app, you may need to read all paras interactively instead of reading the file. It means that 
     you need to design the `*.ui` file by adding or deleting components. 
     
@@ -13,38 +12,52 @@ For example, in the following example data, `data_names` should be `181210plc1p1
 the user can choose one or multiple embryos.
     
 ### Example data
-* The example data can be downloaded with this [link](https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_ad_cityu_edu_hk/Ej_eY_L11SBMiUJk_S4_UMYBaamvJMpQAaAECcyU6bmWxQ?e=1zpsVC), 
-which includes three embryos. Please put `./ExampleData` to the same root folder as this code repository. 
+* The example data can be downloaded with this [link](https://pan.baidu.com/s/1zpcicT928--WV5N2qbY00A) (PW: 7omp)
+which includes two embryos. Please put `./ExampleData` to the same root folder as this code repository. 
 The template parameter settings for this data should be
     ```text
-    [para]
+    # parameters for `combine_slice.py`
+    embryo_names        = [181210plc1p1, 181210plc1p2]
+    xy_resolution       = 0.09
+    z_resolution        = 0.42
+    max_time            = 50
+    reduce_ratio        = 0.50
+    stack_folder        = Data/MembTest
+    num_slice           = 68
+    raw_folder          = ./Data/MembRaw
+    lineage_file        = ./Data/MembRaw/181210plc1p1/aceNuc/CD181210plc1p1.csv
     
-    # segmentation
-    data_folder         = Data/MembTest
-    embryo_names        = [181210plc1p1, 181210plc1p2, 181210plc1p3]  # should list all embryos in the folder
-    max_time            = 150
+    # parameters for `test_edt.py`
+    # <-- stack_folder        = Data/MembTest
+    # <-- embryo_names        = [181210plc1p1]
+    # <-- max_time            = 150
     save_folder         = ResultCell
     batch_size          = 2
-    nucleus_as_seeds    = False
+    # following two choices should be either True|False or False|True
+    nucleus_as_seed     = False
     nucleus_filter      = True
     
-    # shape analysis
-    image_size          = [68, 712, 512]
-    first_run           = False
-    analysis_embryo_names        = [181210plc1p3]
+    # parameters for `shape_analysis.py`
+    # <-- num_slice           = 68
+    # <-- xy_resolution       = 0.09
+    # <-- raw_folder          = ./Data/MembRaw
+    # <-- embryo_names        = [181210plc1p3]
+    # <-- stack_folder        = Data/MembTest
+    first_run                 = False
     ```
 
 ### How to test the functionality
-1. Download 1). `Example data` to `./`; 2). these [files](https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_ad_cityu_edu_hk/Er7DRPjxdBRGrwB7X3L7yS0B9j5FPlmUCW9ahDLOa1qW9w?e=Ig6g9b) to `./ShapeUtil/`; 
-3). trained [model](https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_ad_cityu_edu_hk/EvuLuIAH7u5FteDDcitG7eYB0QIlZoXD_keas05ENqMYvw?e=l8O6na) to `./ModelCell/` So the final folder structure should be 
+1. Download 1). `Example data` to `./Data/MembRaw`; 2). these [files](https://pan.baidu.com/s/1PSRvj7n6s8rJnzzG43X16g) (PW: o2zy) to `./ShapeUtil/`; 
+3). trained [model](https://pan.baidu.com/s/1OjX4E-z2ZecOsvGaoctnRw) (pw: 6t6v) to `./ModelCell/`. So the final folder structure should be 
     ```text
     CShaperApp/: code root folder
-       |--ExampleData/: example data downloaded from the link
-           |--181210plc1p1/: 1st embryo folder
-               |******
-           |--181210plc1p2/: 2nd embryo folder
-               |******
-           |--*****
+       |--Data/: example data downloaded from the link
+           |--MembRaw/: raw slice data
+               |--181210plc1p1/: 1st embryo folder
+                   |******
+               |--181210plc1p2/: 2nd embryo folder
+                   |******
+               |--*****
        |--ModelCell/: trained model
            |--*.cpkt
            |--*****
@@ -54,5 +67,5 @@ The template parameter settings for this data should be
            |--******
        |--*** : (some folders that can be cloned from this repository are not listed here)
     ```
-2. Inside the GUI app, `test_edt.py` and `shape_analysis.py` should be able to run consecutively after receiving the 
-parameters. s
+2. Inside the GUI app, `combine_slice.py`, `test_edt.py` and `shape_analysis.py` should be able to run independently or 
+consecutively after receiving the parameters.
