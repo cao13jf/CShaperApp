@@ -19,7 +19,9 @@ def test(config_file):
     config = parse_config(config_file)
 
     # # fix some parameters for off-the-shelf testing file
-    config["data"]["data_folder"] = config["para"]["data_folder"]
+    config["data"] = {}
+
+    config["data"]["data_root"] = config["para"]["stack_folder"]
     config["data"]["data_names"] = config["para"]["embryo_names"]
     config["data"]["max_time"] = config["para"]["max_time"]
     config["data"]["save_folder"] = config["para"]["save_folder"]
@@ -31,15 +33,17 @@ def test(config_file):
     config["data"]["edt_discrete_num"] = 16
     config["data"]["save_folder"] = os.path.join(config["data"]["save_folder"], "BinaryMemb")
 
+    config["network"] = {}
     config["network"]["net_type"] = "DMapNet"
     config["network"]["net_name"] = "DMapNet_PUB"
     config["network"]["data_shape"] = [24, 128, 96, 1]
     config["network"]["label_shape"] = [16, 128, 96, 1]
     config["network"]["model_file"] = "ModelCell/DMapNet_PUB_5000.ckpt"
 
-    config["testing"]["batch_size"] = config["paras"]["batch_size"]
-    config["testing"]["nucleus_as_seeds"] = config["paras"]["nucleus_as_seeds"]
-    config["testing"]["nucleus_filter"] = config["paras"]["nucleus_filter"]
+    config["testing"] = {}
+    config["testing"]["batch_size"] = config["para"]["batch_size"]
+    config["testing"]["nucleus_as_seed"] = config["para"]["nucleus_as_seed"]
+    config["testing"]["nucleus_filter"] = config["para"]["nucleus_filter"]
 
     config["testing"]["save_binary_seg"] = True
     config["testing"]["save_predicted_map"] = False
@@ -48,9 +52,11 @@ def test(config_file):
     config["testing"]["only_post_process"] = False
     config["testing"]["post_process"] = True
 
+    config["segdata"] = {}
     config["segdata"]["membseg_path"] = os.path.dirname(config["data"]["save_folder"])
-    config["segdata"]["nucleus_data_root"] = config["data"]["data_folder"]
+    config["segdata"]["nucleus_data_root"] = config["data"]["data_root"]
 
+    config["debug"] = {}
     config["debug"]["debug_mode"] = False
     config["debug"]["save_anisotropic"] = False
     config["debug"]["save_graph_model"] = False
@@ -88,7 +94,7 @@ def test(config_file):
         # ==============================================================
         dataloader = DataLoader(config_data)
         dataloader.load_data()
-        [temp_imgs, temp_weight, img_names, emrbyo_name, temp_bbox, temp_size] = dataloader.get_image_data_with_name(0)
+        [temp_imgs, img_names, emrbyo_name, temp_bbox, temp_size] = dataloader.get_image_data_with_name(0)
         
         # For axial direction
         temp_img_axial = transpose_volumes(temp_imgs, slice_direction='axial')
@@ -192,12 +198,13 @@ def test(config_file):
         config_post['segdata'] = config['segdata']
         config_post['segdata']['embryos'] = config_data['data_names']
         config_post['debug'] = config['debug']
-        config_post['result'] = config['result']
+        config_post['result'] = {}
 
         config_post['segdata']['membseg_path'] = config_data['save_folder']
         config_post['result']['postseg_folder'] = config_data['save_folder'] + 'Postseg'
         config_post['result']['nucleus_filter'] = config_test['nucleus_filter']
         config_post['result']['nucleus_as_seed'] = config_test['nucleus_as_seed']
+        config_post['segdata']['max_time'] = config["para"]["max_time"]
         if not os.path.isdir(config_post['result']['postseg_folder']):
             os.makedirs(config_post['result']['postseg_folder'])
 
@@ -209,6 +216,6 @@ if __name__ == '__main__':
     if (len(sys.argv) != 2):
         raise Exception("Invalid number of inputs")
     config_file = str(sys.argv[1])
-    assert (os.path.isfile(config_file))
+    assert (os.path.isfile(config_file)), "Configure file {} doesn't exist".format(config_file)
     test(config_file)  # < ----- input parameters here
 

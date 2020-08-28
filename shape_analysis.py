@@ -2,6 +2,8 @@
 # import dependency library
 import sys
 import shutil
+import numpy as np
+from PIL import Image
 from tqdm import tqdm
 from scipy import ndimage
 import multiprocessing as mp
@@ -161,6 +163,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
 
     ## load seg volume
     seg = nib.load(seg_file).get_data().transpose([2, 1, 0])
+    config["res"] = ace_shape[-1] / seg.shape[-1] * config["xy_resolution"]
     nucleus_location_zoom = (nucleus_location * np.array(seg.shape) / np.array(ace_shape)).astype(np.uint16)
     nucleus_location_zoom[:, 0] = seg.shape[0] - nucleus_location_zoom[:, 0]
     # nucleus_location_zoom[:, 0] = seg.shape[0] - nucleus_location_zoom[:, 0]  # the embryo is reversed at z axis
@@ -475,19 +478,27 @@ if __name__ == '__main__':
     config = parse_config(config_file)
     # Construct folder
     para_config = config['para']
-    para_config["cdfile_folder"] = para_config["data_folder"]
-    para_config["save_nucleus_folder"] = os.path.join(para_config["save_folder", "NucleusLoc"])
+    para_config["data_folder"] = para_config["stack_folder"]
+    para_config["save_nucleus_folder"] = os.path.join(para_config["save_folder"], "NucleusLoc")
     para_config["seg_folder"] = os.path.join(para_config["save_folder"], "BinaryMembPostseg")
     para_config["save_folder"] = os.path.join(para_config["save_folder"], "StatShape")
     para_config["delete_tem_file"] = False
+    para_config["label_dict"] = "./ShapeUtil"
 
     if not os.path.isdir(para_config['save_folder']):
         os.makedirs(para_config['save_folder'])
 
     embryo_names = para_config["embryo_names"]
+
+    # Get the size of the figure
+    example_embryo_folder = os.path.join(para_config["raw_folder"], embryo_names[0], "tif")
+    example_img_file = glob.glob(os.path.join(example_embryo_folder, "*.tif"))
+    raw_size = [para_config["num_slice"]] + list(np.asarray(Image.open(example_img_file[0])).shape)
+    para_config["image_size"] = [raw_size[0], raw_size[2], raw_size[1]]
+
     for embryo_name in embryo_names:
         para_config["embryo_name"] = embryo_name
-        para_config["acetree_file"] = os.path.join(para_config["cdfile_folder"], para_config['embryo_name'], "CD" + para_config['embryo_name']+".csv")
+        para_config["acetree_file"] = os.path.join(para_config["stack_folder"], para_config['embryo_name'], "CD" + para_config['embryo_name']+".csv")
         if not os.path.isdir(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name'])):
             os.makedirs(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
         else:

@@ -29,7 +29,8 @@ def post_process(config):
     parameters = []
     for one_embryo in embryo_names:
         file_names = glob.glob(os.path.join(membseg_path, one_embryo, '*.nii.gz'))
-        for file_name in file_names:
+        file_names.sort()
+        for file_name in file_names[:config_segdata['max_time']]:
             parameters.append([one_embryo,file_name, config])
 
     mpPool = mp.Pool(mp.cpu_count()-1)
@@ -52,7 +53,7 @@ def run_post(para):
 
     # Check input is binary image
     labels = np.unique(py_anistropic_image0)
-    assert len(labels)==2, 'Input of post-processing should be binary'
+    assert len(labels) == 2, 'Input of post-processing should be binary'
     cell_bin_image = np.transpose(py_anistropic_image0, [2,1,0])
 
     cell_bin_image = (cell_bin_image == 0).astype(np.uint8)  # change it into cell based image (binary)
@@ -181,7 +182,7 @@ def run_post(para):
     #  Save final result
     # ===========================================================
     save_folder = config_result['postseg_folder']
-    if config_result.get('save_cell_withmemb', False):
+    if config_result.get('save_cell_withmemb', True):
         save_nii(merged_seg, os.path.join(save_folder, one_embryo, one_embryo + "_" + tp_str.zfill(3) + "_segCell.nii.gz"))
     elif config_result.get('save_cell_nomemb', False):
         save_nii(cell_without_memb, os.path.join(save_folder, one_embryo, one_embryo + "_" + tp_str.zfill(3) + "_segCell.nii.gz"))

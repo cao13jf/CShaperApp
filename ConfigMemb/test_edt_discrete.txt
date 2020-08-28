@@ -1,15 +1,31 @@
 [para]
 
-# segmentation
-data_folder         = Data/MembTest
-embryo_names          = [181210plc1p1, 181210plc1p2, 181210plc1p3]  # should list all embryos in the folder
-max_time            = 150
+# parameters for `combine_slice.py`
+embryo_names        = [181210plc1p1]
+xy_resolution       = 0.09
+z_resolution        = 0.42
+max_time            = 50
+reduce_ratio        = 0.50
+stack_folder        = Data/MembTest
+num_slice           = 68
+raw_folder          = ./Data/MembRaw
+lineage_file        = ./Data/MembRaw/181210plc1p1/aceNuc/CD181210plc1p1.csv
+
+# parameters for `test_edt.py`
+# <-- stack_folder        = Data/MembTest
+# <-- embryo_names        = [181210plc1p1]
+# <-- max_time            = 150
 save_folder         = ResultCell
 batch_size          = 2
-nucleus_as_seeds    = False
+# following two choices should be either True|False or False|True
+nucleus_as_seed     = False
 nucleus_filter      = True
 
-# shape analysis
-image_size          = [68, 712, 512]
+# parameters for `shape_analysis.py`
+# <-- num_slice           = 68
+# <-- xy_resolution       = 0.09
+# <-- raw_folder          = ./Data/MembRaw
+# <-- embryo_names        = [181210plc1p3]
+# <-- stack_folder        = Data/MembTest
 first_run           = False
-analysis_embryo_names        = [181210plc1p3]
+
