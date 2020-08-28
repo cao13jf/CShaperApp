@@ -5,7 +5,7 @@
 or `./shape_analysis.py` with `configparser` library. 
 
     For the GUI app, you may need to read all paras interactively instead of reading the file. It means that 
-    you need to design the `*.ui` file by adding or deleting components. 
+    you need to design the `*.ui` file by adding or deleting components [Example GUI](https://pan.baidu.com/s/1fe27UmV16mvYk0qYDdv_tw) (PW：0000). 
     
 * Please note that the parameter `data_names` is a multi-choice which lists all 1th-level folder names under `data_folder`.
 For example, in the following example data, `data_names` should be `181210plc1p1` / `181210plc1p2` / `181210plc1p3`, from which
