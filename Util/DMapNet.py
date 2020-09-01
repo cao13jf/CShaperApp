@@ -383,8 +383,9 @@ class TensorSliceLayer(TrainableLayer):
         begin = [0]*len(input_shape)
         begin[1] = self.margin
         size = input_shape
-        size[1] = size[1] - 2* self.margin  # Slice out marginal slices
-        output_tensor = tf.slice(input_tensor, begin, size, name='slice')
+        end = [y - x for x, y in zip(begin[1:], size[1:])]
+        begin = begin[1:]
+        output_tensor = input_tensor[:, begin[0]:end[0], begin[1]:end[1], begin[2]:end[2], begin[3]:end[3]]
         return output_tensor
 
 
@@ -395,8 +396,7 @@ class ImageResize(TrainableLayer):
 
     def layer_op(self, image_tensor, feature_tensor):
         feature_shape = feature_tensor.get_shape().as_list()
-        image_tensor = tf.squeeze(image_tensor)
-        image_tensor = tf.transpose(image_tensor, perm=[0, 2, 3, 1])
+        image_tensor = tf.transpose(image_tensor[..., 0], perm=[0, 2, 3, 1])
         image_tensor = tf.image.resize_images(image_tensor, feature_shape[-3:-1])
         image_tensor = tf.transpose(image_tensor, perm=[0, 3, 1, 2])
         image_tensor = tf.expand_dims(image_tensor, axis=-1)

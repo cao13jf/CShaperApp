@@ -14,7 +14,7 @@ class DataLoader():
         self.data_root = config['data_root'] if type(config['data_root']) is list else [config['data_root']]  # Save as list
         self.with_ground_truth = config.get('with_ground_truth', False)
         self.data_names = config.get('data_names', None)
-        self.max_time = config["max_time"]
+        self.max_time = config.get("max_time", -1)
         ##  Data augmentation
         self.with_translate = config.get('with_translate', False)
         self.with_scale = config.get('with_scale', False)
@@ -68,6 +68,7 @@ class DataLoader():
             mask_path = os.path.join(self.data_root[0], one_embryo_name, 'SegMemb')
             volumes_lists = os.listdir(raw_path)
             volumes_lists.sort()
+            self.max_time = len(volumes_lists) if self.max_time <= 0 else self.max_time
             for TP_volume in tqdm(volumes_lists[:self.max_time], desc='Loading Data in ' + raw_path):
                 # load RawMemb volume
                 volume, volume_name = self.__load_one_volume(raw_path, TP_volume)

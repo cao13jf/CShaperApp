@@ -50,14 +50,14 @@ def train(config_file):
     #==============================================================
     #               2, Construct computation graph
     #==============================================================
-    full_data_shape = [batch_size] + config_data['data_shape']  # Batch size + original Data size
+    full_data_shape = [None] + config_data['data_shape']  # Batch size + original Data size
     tf.reset_default_graph()
     with tf.name_scope('model_builder'):
         x = tf.placeholder(tf.float32, shape = full_data_shape, name='Input')  # Place holder to transfer Data
         if label_edt_discrete:
-            y = tf.placeholder(tf.uint8, [batch_size]+config_data['label_shape'], name='Label')
+            y = tf.placeholder(tf.uint8, [None]+config_data['label_shape'], name='Label')
         else:
-            y = tf.placeholder(tf.float32, [batch_size]+config_data['label_shape'], name='Label')
+            y = tf.placeholder(tf.float32, [None]+config_data['label_shape'], name='Label')
         w_regularizer = regularizers.l2_regularizer(config_train.get('decay', 1e-7))
         b_regularizer = regularizers.l2_regularizer(config_train.get('decay', 1e-7))
         net_class = NetFactory.create(net_type)

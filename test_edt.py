@@ -38,7 +38,7 @@ def test(config_file):
     config["network"]["net_name"] = "DMapNet_PUB"
     config["network"]["data_shape"] = [24, 128, 96, 1]
     config["network"]["label_shape"] = [16, 128, 96, 1]
-    config["network"]["model_file"] = "ModelCell/DMapNet_PUB_5000.ckpt"
+    config["network"]["model_file"] = "ModelCell/DMapNet_5000.ckpt"
 
     config["testing"] = {}
     config["testing"]["batch_size"] = config["para"]["batch_size"]
@@ -81,7 +81,7 @@ def test(config_file):
         # ==============================================================
         #               2, Construct computation graph
         # ==============================================================
-        full_data_shape = [batch_size] + data_shape
+        full_data_shape = [None] + data_shape
         input_x = tf.placeholder(tf.float32, shape=full_data_shape)
         net_class = NetFactory.create(net_type)
         net = net_class(num_classes=class_num, w_regularizer=None, b_regularizer=None, name=net_name)
@@ -102,7 +102,7 @@ def test(config_file):
         Hx = max(int((H + 3) / 4) * 4, data_shape[1])  
         Wx = max(int((W + 3) / 4) * 4, data_shape[2])
         data_slice = data_shape[0]
-        full_data_shape = [batch_size, data_slice, Hx, Wx, data_shape[-1]]
+        full_data_shape = [None, data_slice, Hx, Wx, data_shape[-1]]
         x_axial = tf.placeholder(tf.float32, full_data_shape)
         predicty_axial = net(x_axial, is_training=True)
         proby_axial = tf.nn.softmax(predicty_axial)
@@ -113,7 +113,7 @@ def test(config_file):
         Hx = max(int((H + 3) / 4) * 4, data_shape[1])  
         Wx = max(int((W + 3) / 4) * 4, data_shape[2])
         data_slice = data_shape[0]
-        full_data_shape = [batch_size, data_slice, Hx, Wx, data_shape[-1]]
+        full_data_shape = [None, data_slice, Hx, Wx, data_shape[-1]]
         x_sagittal = tf.placeholder(tf.float32, full_data_shape)
         predicty_sagittal = net(x_sagittal, is_training=True)
         proby_sagittal = tf.nn.softmax(predicty_sagittal)

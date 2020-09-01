@@ -5,7 +5,7 @@ embryo_names        = [181210plc1p1]
 xy_resolution       = 0.09
 z_resolution        = 0.42
 max_time            = 50
-reduce_ratio        = 0.50
+reduce_ratio        = 0.30
 stack_folder        = Data/MembTest
 num_slice           = 68
 raw_folder          = ./Data/MembRaw
@@ -14,9 +14,9 @@ lineage_file        = ./Data/MembRaw/181210plc1p1/aceNuc/CD181210plc1p1.csv
 # parameters for `test_edt.py`
 # <-- stack_folder        = Data/MembTest
 # <-- embryo_names        = [181210plc1p1]
-# <-- max_time            = 150
+# <-- max_time            = 5
 save_folder         = ResultCell
-batch_size          = 2
+batch_size          = 1
 # following two choices should be either True|False or False|True
 nucleus_as_seed     = False
 nucleus_filter      = True
