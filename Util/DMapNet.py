@@ -102,7 +102,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='fuse1')
         
         downsample1 = ConvolutionalLayer(self.base_chns[0],
@@ -114,7 +113,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='downsample1')
         
         fuse2 = ConvolutionalLayer(self.base_chns[1],
@@ -125,7 +123,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='fuse2')        
         
         downsample2 = ConvolutionalLayer(self.base_chns[1],
@@ -137,7 +134,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='downsample2')
         
         fuse3 = ConvolutionalLayer(self.base_chns[2],
@@ -148,7 +144,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='fuse3')
         
         fuse4 = ConvolutionalLayer(self.base_chns[3],
@@ -159,7 +154,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='fuse4')    
                 
         feature_expand1 =  ConvolutionalLayer(self.base_chns[1],  # Output channels
@@ -171,7 +165,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='feature_expand1')
         
         feature_expand2 =  ConvolutionalLayer(self.base_chns[2],
@@ -183,7 +176,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='feature_expand2')
 
         feature_expand3 =  ConvolutionalLayer(self.base_chns[3],
@@ -195,7 +187,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='feature_expand3')
 
         centra_slice1 = TensorSliceLayer(margin = 2)
@@ -213,7 +204,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='pred_up1')
         pred_up2_1  = DeconvolutionalLayer(self.num_classes*2,
                     kernel_size= [1, 3, 3],
@@ -224,7 +214,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='pred_up2_1')
         pred_up2_2  = DeconvolutionalLayer(self.num_classes*2,
                     kernel_size= [1, 3, 3],
@@ -235,7 +224,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='pred_up2_2')
         pred_up3_1  = DeconvolutionalLayer(self.num_classes*4,
                     kernel_size= [1, 3, 3],
@@ -246,7 +234,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='pred_up3_1')
         pred_up3_2  = DeconvolutionalLayer(self.num_classes*4,
                     kernel_size= [1, 3, 3],
@@ -257,7 +244,6 @@ class DMapNet(TrainableLayer):
                     b_initializer=self.initializers['b'],
                     b_regularizer=self.regularizers['b'],
                     acti_func=self.acti_func,
-                    with_bn = True,
                     name='pred_up3_2')
         
         final_pred =  ConvLayer(self.num_classes, # Output two class: target and background

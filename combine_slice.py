@@ -13,6 +13,8 @@ from Util.preprocess_lib import combine_slices
 def main(config_file):
     config = parse_config(config_file)
     config = config["para"]
+    for key in config:
+        print(type(key),type(config[key]))
     combine_slices(config)
 
 

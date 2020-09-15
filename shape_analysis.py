@@ -53,6 +53,7 @@ def run_shape_analysis(config):
     #       sementing TPs in a parallel way
     # ========================================================
     file_lock = mp.Lock()  # |-----> for change treelib files
+    print(file_lock, mp.cpu_count(), init)
     mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))
     configs = []
     config["cell_tree"] = cell_tree
@@ -60,6 +61,7 @@ def run_shape_analysis(config):
         config['time_point'] = itime
         configs.append(config.copy())
     #     cell_graph_network(file_lock, config)
+    print(embryo_name)
     for _ in tqdm(mpPool.imap_unordered(cell_graph_network, configs), total=len(configs), desc="Naming {} segmentations".format(embryo_name)):
         pass
 

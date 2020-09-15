@@ -10,6 +10,8 @@ from Util.segmentation_post_process import *
 from Util.parse_config import parse_config
 from Util.train_test_func import prediction_fusion
 from train import NetFactory
+import gc
+
 
 def test(config_file):
 
@@ -17,7 +19,7 @@ def test(config_file):
     #               1, Load configuration parameters
     #=============================================================
     config = parse_config(config_file)
-
+    print(config)
     # # fix some parameters for off-the-shelf testing file
     config["data"] = {}
 
@@ -95,11 +97,11 @@ def test(config_file):
         dataloader = DataLoader(config_data)
         dataloader.load_data()
         [temp_imgs, img_names, emrbyo_name, temp_bbox, temp_size] = dataloader.get_image_data_with_name(0)
-        
+
         # For axial direction
         temp_img_axial = transpose_volumes(temp_imgs, slice_direction='axial')
         [D, H, W] = temp_img_axial.shape
-        Hx = max(int((H + 3) / 4) * 4, data_shape[1])  
+        Hx = max(int((H + 3) / 4) * 4, data_shape[1])
         Wx = max(int((W + 3) / 4) * 4, data_shape[2])
         data_slice = data_shape[0]
         full_data_shape = [None, data_slice, Hx, Wx, data_shape[-1]]
@@ -110,7 +112,7 @@ def test(config_file):
         # For sagittal direction
         temp_imgs = transpose_volumes(temp_imgs, slice_direction='sagittal')
         [D, H, W] = temp_imgs.shape
-        Hx = max(int((H + 3) / 4) * 4, data_shape[1])  
+        Hx = max(int((H + 3) / 4) * 4, data_shape[1])
         Wx = max(int((W + 3) / 4) * 4, data_shape[2])
         data_slice = data_shape[0]
         full_data_shape = [None, data_slice, Hx, Wx, data_shape[-1]]
@@ -188,6 +190,9 @@ def test(config_file):
         print('test time', test_time.mean())
         np.savetxt(save_folder + '/test_time.txt', test_time)
         sess.close()
+
+        del sess, dataloader, net
+        gc.collect()
 
 
     # ==============================================================

@@ -8,6 +8,7 @@ import numpy as np
 from PIL import Image
 import nibabel as nib
 import pandas as pd
+import pandas
 from tqdm import tqdm
 import multiprocessing as mp
 from skimage.transform import resize
@@ -30,6 +31,7 @@ def combine_slices(config):
     raw_folder = config["raw_folder"]
     stack_folder = config["stack_folder"]
     lineage_file = config.get("lineage_file", None)
+    shape_file = config["shape_file"]
 
     # get output size
     raw_memb_files = glob.glob(os.path.join(raw_folder, embryo_names[0], "tifR", "*.tif"))
@@ -88,7 +90,7 @@ def combine_slices(config):
                                                           "y": np.float32,
                                                           "size": np.int16,
                                                           "gweight": np.int32})
-            with open("./ShapeUtil/number_dictionary.txt", "rb") as f:
+            with open(shape_file, "rb") as f:
                 name_dict = pickle.load(f)
 
             configs = []
