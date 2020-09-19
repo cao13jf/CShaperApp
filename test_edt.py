@@ -192,7 +192,8 @@ def test(config_file):
         sess.close()
 
         del sess, dataloader, net
-        gc.collect()
+        if __name__ != '__main__':
+            gc.collect()
 
 
     # ==============================================================

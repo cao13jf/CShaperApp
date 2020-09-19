@@ -2,6 +2,7 @@
 # import dependency library
 import sys
 import shutil
+import warnings
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
@@ -16,6 +17,8 @@ from ShapeUtil.data_structure import *
 from Util.post_lib import check_folder_exist
 from Util.parse_config import parse_config
 from Util.segmentation_post_process import save_nii
+
+warnings.filterwarnings("ignore")
 
 
 stat_embryo = None  # Global embryo shape information

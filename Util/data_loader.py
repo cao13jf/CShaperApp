@@ -26,6 +26,11 @@ class DataLoader():
         self.label_edt_discrete = config.get('label_edt_discrete', False)
         self.edt_discrete_num = config.get('edt_discrete_num', 16)
 
+        self.volumes_lists = []
+        self.raw_pathes = []
+        self.mask_pathes = []
+        self.embryo_names = []
+
 
     def __get_embryo_names(self):
         """
@@ -57,50 +62,20 @@ class DataLoader():
         """
         self.embryo_names = self.__get_embryo_names()
         assert (len(self.embryo_names) > 0)  # Exit with empty name list
-        ImageNames = []
-        embryoNames = []
-        X = []
-        Y = []
-        bbox = []
-        in_size = []
+
         for one_embryo_name in self.embryo_names:
             raw_path = os.path.join(self.data_root[0], one_embryo_name, 'RawMemb')
             mask_path = os.path.join(self.data_root[0], one_embryo_name, 'SegMemb')
             volumes_lists = os.listdir(raw_path)
             volumes_lists.sort()
             self.max_time = len(volumes_lists) if self.max_time <= 0 else self.max_time
-            for TP_volume in tqdm(volumes_lists[:self.max_time], desc='Loading Data in ' + raw_path):
-                # load RawMemb volume
-                volume, volume_name = self.__load_one_volume(raw_path, TP_volume)
 
-                bbmin, bbmax = [0, 0, 0], [y - 1 for y in volume.shape]
-                bbox.append([bbmin, bbmax])  # Box size
-                volume = itensity_normalize_one_volume(volume)
-                volume_size = volume.shape
+            # ================= record data ======================================
+            self.volumes_lists = self.volumes_lists + volumes_lists[:self.max_time]
+            self.raw_pathes = self.raw_pathes + [raw_path] * self.max_time
+            self.mask_pathes = self.mask_pathes + [mask_path] * self.max_time
+            self.embryo_names = self.embryo_names + [one_embryo_name] * self.max_time
 
-                X.append(volume)
-                embryoNames.append(one_embryo_name)
-                ImageNames.append(volume_name)
-                in_size.append(volume_size)
-
-                if (self.with_ground_truth):
-                    mask_name = "_".join(volume_name.split(".")[0].split("_")[0:2] + ["segMemb.nii.gz"])
-                    label, _ = self.__load_one_volume(mask_path, mask_name)
-
-                    # check whether implement EDT on label
-                    if (self.label_edt_transform):
-                        if (self.label_edt_discrete):
-                            label = binary_to_EDT_3D(label, self.valid_edt_width, self.edt_discrete_num).astype(
-                                np.uint8)
-                        else:
-                            label = binary_to_EDT_3D(label, self.valid_edt_width).astype(np.uint8)
-                    Y.append(label)
-        self.image_names = ImageNames
-        self.embryo_names = embryoNames
-        self.data = X
-        self.label = Y
-        self.bbox = bbox
-        self.in_size = in_size
 
     def get_subimage_batch(self):
         """
@@ -127,11 +102,12 @@ class DataLoader():
             directions = ['axial', 'sagittal', 'coronal']
             idx = random.randint(0, 2)
             slice_direction = directions[idx]
-        for i in range(batch_size):
-            self.image_id = random.randint(0, len(self.data) - 1)  # random chose dataset
-            data_volume = self.data[self.image_id]
+
+        batch_data_idx = random.choices(range(len(self.volumes_lists)), k=batch_size)
+        for data_idx in batch_data_idx:
+            data_volume = self.get_raw_data(data_idx)
             if (self.with_ground_truth):
-                label_volume = self.label[self.image_id]
+                label_volume = self.get_label_data(data_idx)
                 ## Data augmentation
                 [data_volume, label_volume] = self.augment_data(
                     [data_volume, label_volume], issegs=[False, True])
@@ -165,15 +141,40 @@ class DataLoader():
         """
         get the toal number of images
         """
-        return len(self.data)
+        return len(self.volumes_lists)
 
     def get_image_data_with_name(self, i):
         """
         Used for testing, get one image Data and patient name
         """
-        return [self.data[i], self.image_names[i], self.embryo_names[i], self.bbox[i], self.in_size[i]]
+        # load RawMemb volume
+        volume, volume_name = self.__load_one_volume(self.raw_pathes[i], self.volumes_lists[i])
 
+        bbmin, bbmax = [0, 0, 0], [y - 1 for y in volume.shape]
+        bbox = [bbmin, bbmax]  # Box size
+        volume = itensity_normalize_one_volume(volume)
+        volume_size = volume.shape
 
+        return [volume, self.volumes_lists[i], self.embryo_names[i], bbox, volume_size]
+
+    def get_raw_data(self, idx):
+        data, _ = self.__load_one_volume(self.raw_pathes[idx], self.volumes_lists[idx])
+
+        return data
+
+    def get_label_data(self, idx):
+        mask_name = "_".join(self.volumes_lists[idx].split(".")[0].split("_")[0:2] + ["segMemb.nii.gz"])
+        label, _ = self.__load_one_volume(self.mask_pathes[idx], mask_name)
+
+        # check whether implement EDT on label
+        if (self.label_edt_transform):
+            if (self.label_edt_discrete):
+                label = binary_to_EDT_3D(label, self.valid_edt_width, self.edt_discrete_num).astype(
+                    np.uint8)
+            else:
+                label = binary_to_EDT_3D(label, self.valid_edt_width).astype(np.uint8)
+
+        return label
 
     '''
     functions for augmentation

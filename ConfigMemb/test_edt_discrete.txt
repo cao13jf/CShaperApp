@@ -1,10 +1,10 @@
 [para]
 
 # parameters for `combine_slice.py`
-embryo_names        = [181210plc1p1]
+embryo_names        = [181210plc1p1, 181210plc1p1]
 xy_resolution       = 0.09
 z_resolution        = 0.42
-max_time            = 50
+max_time            = 10
 reduce_ratio        = 0.30
 stack_folder        = Data/MembTest
 num_slice           = 68
@@ -28,4 +28,5 @@ nucleus_filter      = True
 # <-- embryo_names        = [181210plc1p3]
 # <-- stack_folder        = Data/MembTest
 first_run                 = False
-
+# -- TBD
+shape_file                = ShapeUtil/number_dictionary.txt

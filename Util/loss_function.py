@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 #
 #
-
-
 from niftynet.layer.loss_segmentation import cross_entropy
 from niftynet.layer.loss_regression import l2_loss
 import tensorflow as tf

@@ -24,6 +24,7 @@ ShapeUtil/.ipynb_checkpoints
 ./ShapeUtil/*.txt
 ResultCell/
 venv
+nibabel
 
 !./ShapeUtil/*.csv
 !./ShapeUtil/*.txt

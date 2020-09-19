@@ -1,7 +1,6 @@
 # import dependency library
 import os
 import glob
-import itk
 import random
 import numpy as np
 import nibabel as nib
