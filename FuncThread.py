@@ -23,7 +23,7 @@ from Util.segmentation_post_process import save_nii
 
 
 class PreprocessThread(QThread):
-    signal = pyqtSignal(bool)
+    signal = pyqtSignal(bool, str)
 
     def __init__(self, config={}):
         self.config = config
@@ -35,13 +35,13 @@ class PreprocessThread(QThread):
     def run(self):
         try:
             combine_slices(self.config)
-            self.signal.emit(True)
+            self.signal.emit(True, 'Preprocess')
         except Exception:
-            self.signal.emit(False)
+            self.signal.emit(False, 'Preprocess')
 
 
 class SegmentationThread(QThread):
-    signal = pyqtSignal(bool)
+    signal = pyqtSignal(bool, str)
 
     def __init__(self, config={}):
         self.config = config
@@ -184,7 +184,7 @@ class SegmentationThread(QThread):
                 del sess, dataloader, net
                 if __name__ != '__main__':
                     gc.collect()
-            self.signal.emit(True)
+
             # ==============================================================
             #               Post processing (binary membrane --> isolated SegCell)
             # ==============================================================
@@ -203,12 +203,13 @@ class SegmentationThread(QThread):
                 if not os.path.isdir(config_post['result']['postseg_folder']):
                     os.makedirs(config_post['result']['postseg_folder'])
                 post_process(config_post)
+                self.signal.emit(True, 'Segmentation')
         except Exception:
-            self.signal.emit(False)
+            self.signal.emit(False, 'Segmentation')
 
 
 class AnalysisThread(QThread):
-    signal = pyqtSignal(bool)
+    signal = pyqtSignal(bool, str)
 
     def __init__(self, config={}):
         self.config = config
@@ -221,7 +222,7 @@ class AnalysisThread(QThread):
         try:
             # config = self.config
             para_config = self.config['para']
-            print(para_config)
+            # print(para_config)
             para_config["data_folder"] = para_config["stack_folder"]
             para_config["save_nucleus_folder"] = os.path.join(para_config["save_folder"], "NucleusLoc")
             para_config["seg_folder"] = os.path.join(para_config["save_folder"], "BinaryMembPostseg")
@@ -231,7 +232,7 @@ class AnalysisThread(QThread):
 
             if not os.path.isdir(para_config['save_folder']):
                 os.makedirs(para_config['save_folder'])
-            print(para_config)
+            # print(para_config)
             embryo_names = para_config["embryo_names"]
 
             # Get the size of the figure
@@ -239,7 +240,7 @@ class AnalysisThread(QThread):
             example_img_file = glob.glob(os.path.join(example_embryo_folder, "*.tif"))
             raw_size = [para_config["num_slice"]] + list(np.asarray(Image.open(example_img_file[0])).shape)
             para_config["image_size"] = [raw_size[0], raw_size[2], raw_size[1]]
-            print(para_config)
+            # print(para_config)
             for embryo_name in embryo_names:
                 para_config["embryo_name"] = embryo_name
                 para_config["acetree_file"] = os.path.join(para_config["stack_folder"], para_config['embryo_name'],
@@ -250,9 +251,9 @@ class AnalysisThread(QThread):
                     shutil.rmtree(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
                     os.makedirs(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
                 run_shape_analysis(para_config, embryo_name)
-            self.signal.emit(True)
+            self.signal.emit(True, 'Analysis')
         except Exception:
-            self.signal.emit(False)
+            self.signal.emit(False, 'Analysis')
 
 
 warnings.filterwarnings("ignore")

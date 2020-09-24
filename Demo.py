@@ -155,35 +155,42 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def runPreprocess(self):
         config = {}
-        config['num_slice'] = int(self.LE_sliceNum.text())
-        en = []
-        en.append(self.CB_embryoNames.currentText())
-        config["embryo_names"] = en
-        config["max_time"] = int(self.LE_maxTime.text())
-        config["xy_resolution"] = float(self.LE_xyResolution.text())
-        config["z_resolution"] = float(self.LE_zResolution.text())
-        config["reduce_ratio"] = float(self.LE_reduceRatio.text())
-        config["raw_folder"] = self.LE_rawFolder.text()
-        config["stack_folder"] = self.LE_stackFolder.text()
-        config["lineage_file"] = self.LE_lineage.text()
-        config["shape_file"] = self.LE_shapeFile.text()
-
+        try:
+            config['num_slice'] = int(self.LE_sliceNum.text())
+            en = []
+            en.append(self.CB_embryoNames.currentText())
+            config["embryo_names"] = en
+            config["max_time"] = int(self.LE_maxTime.text())
+            config["xy_resolution"] = float(self.LE_xyResolution.text())
+            config["z_resolution"] = float(self.LE_zResolution.text())
+            config["reduce_ratio"] = float(self.LE_reduceRatio.text())
+            config["raw_folder"] = self.LE_rawFolder.text()
+            config["stack_folder"] = self.LE_stackFolder.text()
+            config["lineage_file"] = self.LE_lineage.text()
+            config["shape_file"] = self.LE_shapeFile.text()
+        except Exception:
+            QMessageBox.warning(self, 'Error!', 'Please check your paras!')
         self.LE_maxTime_Seg.setText(self.LE_maxTime.text())
         self.LE_sliceNum_Ana.setText(self.LE_sliceNum.text())
+        self.call = False
         self.thread = PreprocessThread(config)
         self.thread.signal.connect(self.PreprocessCallback)
         self.thread.start()
+        # if self.call == True:
+        #     QMessageBox.information(self, 'Preprocess', 'Preprocess success!')
+        # else:
+        #     QMessageBox.warning(self, 'Error!', 'Segmentation failed!')
         # print(self.thread.finished())
         # try:
         #     combine_slices(config)
         # except Exception as e:
         #     QMessageBox.warning(self, 'Errors', 'Parameters error, please check your paras!')
-    def PreprocessCallback(self, call):
-        self.call = call
-        if self.call :
-            QMessageBox.information(self, 'Mission success')
+    def PreprocessCallback(self, call, func):
+
+        if call:
+            QMessageBox.information(self, func, func+' success!')
         else:
-            QMessageBox.warning(self, 'Please check your paras!')
+            QMessageBox.warning(self, 'Error!', func+' failed!')
         # print(call)
 
     def chooseStackFolder_Seg(self):
@@ -215,70 +222,77 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def runSegmentation(self):
         config = {}
-        config['para']={}
-        config["para"]["stack_folder"] = self.LE_stackFolder_Seg.text()
-        en = []
-        en.append(self.CB_embryoNames_Seg.currentText())
-        config["para"]["embryo_names"] = en
-        config["para"]["max_time"] = int(self.LE_maxTime_Seg.text())
-        config["para"]["save_folder"] = self.LE_saveFolder_Seg.text()
-        config["para"]["batch_size"] = int(self.LE_batchSize_Seg.text())
-        lineage = self.CB_lineage_Seg.currentText()
-        if lineage == 'No lineage':
-            config["para"]["nucleus_as_seed"] = False
-            config["para"]["nucleus_filter"] = False
-        elif lineage == 'Before segmentation':
-            config["para"]["nucleus_as_seed"] = True
-            config["para"]["nucleus_filter"] = False
-        elif lineage == 'After segmentation':
-            config["para"]["nucleus_as_seed"] = False
-            config["para"]["nucleus_filter"] = True
+        try:
+            config['para']={}
+            config["para"]["stack_folder"] = self.LE_stackFolder_Seg.text()
+            en = []
+            en.append(self.CB_embryoNames_Seg.currentText())
+            config["para"]["embryo_names"] = en
+            config["para"]["max_time"] = int(self.LE_maxTime_Seg.text())
+            config["para"]["save_folder"] = self.LE_saveFolder_Seg.text()
+            config["para"]["batch_size"] = int(self.LE_batchSize_Seg.text())
+            lineage = self.CB_lineage_Seg.currentText()
+            if lineage == 'No lineage':
+                config["para"]["nucleus_as_seed"] = False
+                config["para"]["nucleus_filter"] = False
+            elif lineage == 'Before segmentation':
+                config["para"]["nucleus_as_seed"] = True
+                config["para"]["nucleus_filter"] = False
+            elif lineage == 'After segmentation':
+                config["para"]["nucleus_as_seed"] = False
+                config["para"]["nucleus_filter"] = True
 
-        config["data"] = {}
-        config["data"]["data_root"] = config["para"]["stack_folder"]
-        config["data"]["data_names"] = config["para"]["embryo_names"]
-        config["data"]["max_time"] = config["para"]["max_time"]
-        config["data"]["save_folder"] = config["para"]["save_folder"]
-        config["data"]["with_ground_truth"] = False
-        config["data"]["label_edt_transform"] = True
-        config["data"]["valid_edt_width"] = 30
-        config["data"]["label_edt_discrete"] = True
-        config["data"]["edt_discrete_num"] = 16
-        config["data"]["save_folder"] = os.path.join(config["data"]["save_folder"], "BinaryMemb")
+            config["data"] = {}
+            config["data"]["data_root"] = config["para"]["stack_folder"]
+            config["data"]["data_names"] = config["para"]["embryo_names"]
+            config["data"]["max_time"] = config["para"]["max_time"]
+            config["data"]["save_folder"] = config["para"]["save_folder"]
+            config["data"]["with_ground_truth"] = False
+            config["data"]["label_edt_transform"] = True
+            config["data"]["valid_edt_width"] = 30
+            config["data"]["label_edt_discrete"] = True
+            config["data"]["edt_discrete_num"] = 16
+            config["data"]["save_folder"] = os.path.join(config["data"]["save_folder"], "BinaryMemb")
 
-        config["network"] = {}
-        config["network"]["net_type"] = "DMapNet"
-        config["network"]["net_name"] = "DMapNet_PUB"
-        config["network"]["data_shape"] = [24, 128, 96, 1]
-        config["network"]["label_shape"] = [16, 128, 96, 1]
-        config["network"]["model_file"] = self.LE_modelFile_Seg.text()
+            config["network"] = {}
+            config["network"]["net_type"] = "DMapNet"
+            config["network"]["net_name"] = "DMapNet_PUB"
+            config["network"]["data_shape"] = [24, 128, 96, 1]
+            config["network"]["label_shape"] = [16, 128, 96, 1]
+            config["network"]["model_file"] = self.LE_modelFile_Seg.text()
 
-        config["testing"] = {}
-        config["testing"]["batch_size"] = config["para"]["batch_size"]
-        config["testing"]["nucleus_as_seed"] = config["para"]["nucleus_as_seed"]
-        config["testing"]["nucleus_filter"] = config["para"]["nucleus_filter"]
-        config["testing"]["save_binary_seg"] = True
-        config["testing"]["save_predicted_map"] = False
-        config["testing"]["slice_direction"] = "sagittal"
-        config["testing"]["direction_fusion"] = True
-        config["testing"]["only_post_process"] = False
-        config["testing"]["post_process"] = True
+            config["testing"] = {}
+            config["testing"]["batch_size"] = config["para"]["batch_size"]
+            config["testing"]["nucleus_as_seed"] = config["para"]["nucleus_as_seed"]
+            config["testing"]["nucleus_filter"] = config["para"]["nucleus_filter"]
+            config["testing"]["save_binary_seg"] = True
+            config["testing"]["save_predicted_map"] = False
+            config["testing"]["slice_direction"] = "sagittal"
+            config["testing"]["direction_fusion"] = True
+            config["testing"]["only_post_process"] = False
+            config["testing"]["post_process"] = True
 
-        config["segdata"] = {}
-        config["segdata"]["membseg_path"] = os.path.dirname(config["data"]["save_folder"])
-        config["segdata"]["nucleus_data_root"] = config["data"]["data_root"]
+            config["segdata"] = {}
+            config["segdata"]["membseg_path"] = os.path.dirname(config["data"]["save_folder"])
+            config["segdata"]["nucleus_data_root"] = config["data"]["data_root"]
 
-        config["debug"] = {}
-        config["debug"]["debug_mode"] = False
-        config["debug"]["save_anisotropic"] = False
-        config["debug"]["save_graph_model"] = False
-        config["debug"]["save_init_watershed"] = False
-        config["debug"]["save_merged_seg"] = False
-        config["debug"]["save_cell_nomemb"] = False
-
+            config["debug"] = {}
+            config["debug"]["debug_mode"] = False
+            config["debug"]["save_anisotropic"] = False
+            config["debug"]["save_graph_model"] = False
+            config["debug"]["save_init_watershed"] = False
+            config["debug"]["save_merged_seg"] = False
+            config["debug"]["save_cell_nomemb"] = False
+        except Exception:
+            QMessageBox.warning(self, 'Error!', 'Please check your paras!')
+        self.call = False
         self.thread = SegmentationThread(config)
         self.thread.signal.connect(self.PreprocessCallback)
         self.thread.start()
+        # if self.call == True:
+        #     QMessageBox.information(self, 'Segmentation', 'Segmentation success!')
+        # else:
+        #     QMessageBox.warning(self, 'Error!', 'Segmentation failed!')
 
     def chooseRawFolder_Ana(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
@@ -315,21 +329,28 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def runAnalysis(self):
 
         config = {}
-        config['para'] = {}
-        config['para']['num_slice'] = int(self.LE_sliceNum_Ana.text())
-        config['para']['xy_resolution'] = float(self.LE_xyResolution_Ana.text())
-        config['para']['raw_folder'] = self.LE_rawFolder_Ana.text()
-        config['para']['save_folder'] = self.LE_saveFolder_Ana.text()
-        en = []
-        en.append(self.CB_embryoNames_Ana.currentText())
-        config["para"]["embryo_names"] = en
-        config['para']['stack_folder'] = self.LE_stackFolder_Ana.text()
-        config['para']['first_run'] = False
-        config['para']["label_dict"] = self.LE_shapeUtil_Ana.text()
-
+        try:
+            config['para'] = {}
+            config['para']['num_slice'] = int(self.LE_sliceNum_Ana.text())
+            config['para']['xy_resolution'] = float(self.LE_xyResolution_Ana.text())
+            config['para']['raw_folder'] = self.LE_rawFolder_Ana.text()
+            config['para']['save_folder'] = self.LE_saveFolder_Ana.text()
+            en = []
+            en.append(self.CB_embryoNames_Ana.currentText())
+            config["para"]["embryo_names"] = en
+            config['para']['stack_folder'] = self.LE_stackFolder_Ana.text()
+            config['para']['first_run'] = False
+            config['para']["label_dict"] = self.LE_shapeUtil_Ana.text()
+        except Exception:
+            QMessageBox.warning(self, 'Error!', 'Please check your paras!')
+        self.call = False
         self.thread = AnalysisThread(config)
         self.thread.signal.connect(self.PreprocessCallback)
         self.thread.start()
+        # if self.call == True:
+        #     QMessageBox.information(self, 'Analysis', 'Analysis success!')
+        # else:
+        #     QMessageBox.warning(self, 'Error!', 'Segmentation failed!')
 
 
 
