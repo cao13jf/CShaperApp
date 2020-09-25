@@ -53,9 +53,9 @@ def construct_celltree(nucleus_file, config):
             cell_list = list(set(cell_list))
         cell_list.sort()
         number_dictionary = dict(zip(cell_list, range(1, len(cell_list)+1)))
-        with open(os.path.join(config["label_dict"],'number_dictionary.txt'), 'wb') as f:
+        with open(os.path.join(os.path.dirname(config["number_dictionary"]), 'number_dictionary.txt'), 'wb') as f:
             pickle.dump(number_dictionary, f)
-        with open(os.path.join(config["label_dict"], 'name_dictionary.txt'), 'wb') as f:
+        with open(os.path.join(os.path.dirname(config["number_dictionary"]), 'name_dictionary.txt'), 'wb') as f:
             pickle.dump(dict(zip(range(1, len(cell_list)+1), cell_list)), f)
 
     max_time = config.get('max_time', 100)

@@ -49,7 +49,7 @@ def run_shape_analysis(config):
     ## Parallel computing for the cell relation graph
     if not os.path.isdir('./ShapeUtil/TemCellGraph'):
         os.makedirs('./ShapeUtil/TemCellGraph')
-    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
+    with open(config["number_dictionary"], 'rb') as f:
         number_dict = pickle.load(f)
 
     # ========================================================
@@ -57,7 +57,7 @@ def run_shape_analysis(config):
     # ========================================================
     file_lock = mp.Lock()  # |-----> for change treelib files
     print(file_lock, mp.cpu_count(), init)
-    mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))
+    mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))  # TODO: change `mp.cpu_count()-1` --> `2`
     configs = []
     config["cell_tree"] = cell_tree
     for itime in tqdm(range(1, max_time+1), desc="Compose configs"):
@@ -108,10 +108,9 @@ def cell_graph_network(config):
 
 
     #  Load the dictionary of cell and it's coresponding number in the dictionary
-    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
+    with open(config["number_dictionary"], 'rb') as f:
         number_dict = pickle.load(f)
-    with open(os.path.join(config["label_dict"], 'name_dictionary.txt'), 'rb') as f:
-        name_dict = pickle.load(f)
+    name_dict = {value: key for key, value in number_dict.items()}
 
     ## unify the labels in the segmentation and that in the aceTree information
     division_seg, nuc_position = unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config)
@@ -148,10 +147,9 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
     :return unify_seg: cell segmentation with labels unified
     :return nuc_positions: nucleus positions with labels
     '''
-    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
+    with open(config["number_dictionary"], 'rb') as f:
         number_dict = pickle.load(f)
-    with open(os.path.join(config["label_dict"], 'name_dictionary.txt'), 'rb') as f:
-        name_dict = pickle.load(f)
+    name_dict = {value: key for key, value in number_dict.items()}
     cell_tree = config["cell_tree"]
 
     df = pd.read_csv(config['acetree_file'])
@@ -488,7 +486,6 @@ if __name__ == '__main__':
     para_config["seg_folder"] = os.path.join(para_config["save_folder"], "BinaryMembPostseg")
     para_config["save_folder"] = os.path.join(para_config["save_folder"], "StatShape")
     para_config["delete_tem_file"] = False
-    para_config["label_dict"] = "./ShapeUtil"
 
     if not os.path.isdir(para_config['save_folder']):
         os.makedirs(para_config['save_folder'])

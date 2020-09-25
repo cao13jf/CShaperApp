@@ -31,7 +31,7 @@ def combine_slices(config):
     raw_folder = config["raw_folder"]
     stack_folder = config["stack_folder"]
     lineage_file = config.get("lineage_file", None)
-    shape_file = config["shape_file"]
+    shape_file = config["number_dictionary"]
 
     # get output size
     raw_memb_files = glob.glob(os.path.join(raw_folder, embryo_names[0], "tifR", "*.tif"))
