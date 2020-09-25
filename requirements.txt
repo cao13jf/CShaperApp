@@ -39,6 +39,8 @@ pandas==1.1.2
 Pillow==7.2.0
 protobuf==3.12.4
 pyparsing==2.4.7
+PyQt5==5.15.1
+PyQt5-sip==12.8.1
 python-dateutil==2.8.1
 pytz==2020.1
 PyWavelets==1.1.1

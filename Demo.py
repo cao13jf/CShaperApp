@@ -13,6 +13,8 @@ from PyQt5 import QtWidgets
 
 import shutil
 from PIL import Image
+import warnings
+warnings.filterwarnings("ignore")
 from skimage.measure import marching_cubes_lewiner, mesh_surface_area
 
 import tensorflow as tf
