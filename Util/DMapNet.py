@@ -18,7 +18,7 @@ class DMapNet(TrainableLayer):
                  b_initializer=None,
                  b_regularizer=None,
                  acti_func='prelu',
-                 name='DMapNet'):
+                 name='CShaper'):
 
         super(DMapNet, self).__init__(name=name)
         self.num_classes = num_classes

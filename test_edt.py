@@ -23,24 +23,23 @@ def test(config_file):
     # # fix some parameters for off-the-shelf testing file
     config["data"] = {}
 
-    config["data"]["data_root"] = config["para"]["stack_folder"]
+    config["data"]["data_root"] = os.path.join(config["para"]["project_folder"], "RawStack")
     config["data"]["data_names"] = config["para"]["embryo_names"]
     config["data"]["max_time"] = config["para"]["max_time"]
-    config["data"]["save_folder"] = config["para"]["save_folder"]
+    config["data"]["save_folder"] = os.path.join(config["para"]["project_folder"], "CellMembrane")
 
     config["data"]["with_ground_truth"] = False
     config["data"]["label_edt_transform"] = True
     config["data"]["valid_edt_width"] = 30
     config["data"]["label_edt_discrete"] = True
     config["data"]["edt_discrete_num"] = 16
-    config["data"]["save_folder"] = os.path.join(config["data"]["save_folder"], "BinaryMemb")
 
     config["network"] = {}
-    config["network"]["net_type"] = "DMapNet"
+    config["network"]["net_type"] = "CShaper"
     config["network"]["net_name"] = "DMapNet_PUB"
     config["network"]["data_shape"] = [24, 128, 96, 1]
     config["network"]["label_shape"] = [16, 128, 96, 1]
-    config["network"]["model_file"] = "ModelCell/DMapNet_5000.ckpt"
+    config["network"]["model_file"] = config["para"]["model_file"]
 
     config["testing"] = {}
     config["testing"]["batch_size"] = config["para"]["batch_size"]
@@ -55,7 +54,7 @@ def test(config_file):
     config["testing"]["post_process"] = True
 
     config["segdata"] = {}
-    config["segdata"]["membseg_path"] = os.path.dirname(config["data"]["save_folder"])
+    config["segdata"]["membseg_path"] = config["data"]["save_folder"]
     config["segdata"]["nucleus_data_root"] = config["data"]["data_root"]
 
     config["debug"] = {}
@@ -166,13 +165,8 @@ def test(config_file):
                 pred = delete_isolate_labels(pred_fusion)
             else:
                 pred = prob_sagittal  # Regression prediction provides the MAP directly.
-            if(config_test.get('save_binary_seg', False)):
-                out_label = post_process_on_edt(pred).astype(np.int16)
-            elif(config_test.get('save_predicted_map', False)):
-                save_array_as_nifty_volume((pred).astype(np.int16), os.path.join("./ResultTem", "PredictedMap", emrbyo_name, img_names))
-            else:
-                sess.close()
-                raise Exception('No distance map or binary segmentation is to be saved')
+
+            out_label = post_process_on_edt(pred).astype(np.int16)
 
 
             # ==============================================================
@@ -188,7 +182,6 @@ def test(config_file):
             print(save_file)
         test_time = np.asarray(test_time)
         print('test time', test_time.mean())
-        np.savetxt(save_folder + '/test_time.txt', test_time)
         sess.close()
 
         del sess, dataloader, net

@@ -19,7 +19,7 @@ from Util.DMapNet import DMapNet
 class NetFactory(object):
     @staticmethod
     def create(name):
-        if name == 'DMapNet':
+        if name == 'CShaper':
             return DMapNet
         # add your own networks here
         print('unsupported network:', name)

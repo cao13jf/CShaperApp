@@ -29,9 +29,9 @@ def combine_slices(config):
     z_res = config["z_resolution"]
     reduce_ratio = config["reduce_ratio"]
     raw_folder = config["raw_folder"]
-    stack_folder = config["stack_folder"]
+    stack_folder = os.path.join(config["project_folder"], "RawStack")
     lineage_file = config.get("lineage_file", None)
-    shape_file = config["number_dictionary"]
+    number_dictionary = config["number_dictionary"]
 
     # get output size
     raw_memb_files = glob.glob(os.path.join(raw_folder, embryo_names[0], "tifR", "*.tif"))
@@ -90,12 +90,13 @@ def combine_slices(config):
                                                           "y": np.float32,
                                                           "size": np.int16,
                                                           "gweight": np.int32})
-            with open(shape_file, "rb") as f:
-                name_dict = pickle.load(f)
+
+            pd_number = pd.read_csv(number_dictionary, names=["name", "label"])
+            number_dict = pd.Series(pd_number.label.values, index=pd_number.name).to_dict()
 
             configs = []
             for tp in range(1, max_time + 1):
-                configs.append((embryo_name, name_dict, pd_lineage, tp, raw_size, out_size, out_res, xy_res/z_res, target_folder))
+                configs.append((embryo_name, number_dict, pd_lineage, tp, raw_size, out_size, out_res, xy_res/z_res, target_folder))
             for _ in tqdm(mpPool.starmap(save_nuc_seg, configs), total=len(configs),
                           desc="Construct nucleus location of {}".format(embryo_name)):
                 pass

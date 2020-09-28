@@ -257,7 +257,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config["data"]["save_folder"] = os.path.join(config["data"]["save_folder"], "BinaryMemb")
 
             config["network"] = {}
-            config["network"]["net_type"] = "DMapNet"
+            config["network"]["net_type"] = "CShaper"
             config["network"]["net_name"] = "DMapNet_PUB"
             config["network"]["data_shape"] = [24, 128, 96, 1]
             config["network"]["label_shape"] = [16, 128, 96, 1]

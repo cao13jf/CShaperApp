@@ -71,7 +71,7 @@ if RENAME_FLAG:
                   '200710hmr1plc1p3'],
     }
 
-    data_folder = "/home/jeff/ProjectCode/LearningCell/CShaper/DMapNet/ResultCell/BinaryMembPostseg/181210plc1p*"
+    data_folder = "/home/jeff/ProjectCode/LearningCell/CShaper/CShaper/ResultCell/BinaryMembPostseg/181210plc1p*"
     data_files = glob.glob(os.path.join(data_folder, "**/*.nii.gz"), recursive=True)
     for data_file in tqdm(data_files, desc="Adding header"):
         img = nib.load(data_file)

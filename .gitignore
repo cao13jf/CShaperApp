@@ -9,6 +9,7 @@ Data/
 **.avi
 run_shape_analysis.sh
 run_test_edt.sh
+tem.py
 
 Tem
 
@@ -16,6 +17,8 @@ ModelCell/
 ResultCell/
 ShapeUtil/RobustStat/
 ShapeUtil/TemCellGraph
+TestProject
+Resource
 
 ShapeUtil/.ipynb_checkpoints
 /ResultTem

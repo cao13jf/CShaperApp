@@ -11,7 +11,6 @@ from scipy.spatial import Delaunay
 from skimage.morphology import h_maxima
 from scipy.ndimage import morphology, binary_dilation, binary_opening
 
-
 def check_folder_exist(file_name):
     if not os.path.isdir(os.path.dirname(file_name)):
         os.makedirs(os.path.dirname(file_name))
