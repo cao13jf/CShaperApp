@@ -1,50 +1,16 @@
 
 from CShaper import Ui_MainWindow
-
-import sys
-import os
-
-from PyQt5 import QtCore
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QImage
 from PyQt5.QtWidgets import (QApplication, QGridLayout, QGroupBox, QDialog,
                              QLabel, QSlider, QVBoxLayout, QMainWindow,
                              QMessageBox)
 from PyQt5 import QtWidgets
 from FuncThread import PreprocessThread, SegmentationThread, AnalysisThread
-import shutil
-from PIL import Image
 import warnings
-warnings.filterwarnings("ignore")
-from skimage.measure import marching_cubes_lewiner, mesh_surface_area
-
-import tensorflow as tf
 from multiprocessing import freeze_support
-from ShapeUtil.draw_lib import *
-from ShapeUtil.data_structure import *
-
-from Util.data_loader import *
-from Util.train_test_func import *
-from Util.segmentation_post_process import *
-from Util.train_test_func import prediction_fusion
-from train import NetFactory
-import gc
 import re
 import sys
-import shutil
-import numpy as np
-from PIL import Image
-from tqdm import tqdm
-from scipy import ndimage
-import multiprocessing as mp
-from skimage import morphology
-from skimage.measure import marching_cubes_lewiner, mesh_surface_area
-from ShapeUtil.draw_lib import *
 from ShapeUtil.data_structure import *
-from Util.post_lib import check_folder_exist
-from Util.parse_config import parse_config
-from Util.segmentation_post_process import save_nii
-import warnings
+warnings.filterwarnings("ignore")
 
 
 class MainForm(QMainWindow, Ui_MainWindow):
@@ -55,43 +21,39 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.Function.currentChanged.connect(self.updateBlankInfo)
         # combine_slice.py
         self.Btn_rawFolder.clicked.connect(self.chooseRawFolder_Pre)
-        self.Btn_stackFolder.clicked.connect(self.chooseStackFolder_Pre)
+        self.Btn_projectFolder.clicked.connect(self.chooseProjectFolder_Pre)
         self.Btn_lineageFile.clicked.connect(self.chooseLineageFile_Pre)
         self.Btn_runPreprocess.clicked.connect(self.runPreprocess)
-        self.Btn_shapeFile.clicked.connect(self.chooseShapeFile)
+        self.Btn_numberDict.clicked.connect(self.chooseNumberDict)
 
         # test_edt.py
-        self.Btn_stackFolder_Seg.clicked.connect(self.chooseStackFolder_Seg)
-        self.Btn_saveFolder_Seg.clicked.connect(self.chooseSaveFolder_Seg)
+        self.Btn_projectFolder_Seg.clicked.connect(self.chooseProjectFolder_Seg)
         self.Btn_modelFile_Seg.clicked.connect(self.chooseModelFile_Seg)
         self.Btn_runSegmentation.clicked.connect(self.runSegmentation)
 
         # shape_analysis.py
         self.Btn_runAnalysis.clicked.connect(self.runAnalysis)
-        self.Btn_shapeUtil_Ana.clicked.connect(self.chooseShapeUtil)
+        self.Btn_numberDict_Ana.clicked.connect(self.chooseNumberDict_Ana)
         self.Btn_rawFolder_Ana.clicked.connect(self.chooseRawFolder_Ana)
-        self.Btn_stackFolder_Ana.clicked.connect(self.chooseStackFolder_Ana)
-        self.Btn_saveFolder_Ana.clicked.connect(self.chooseSaveFolder_Ana)
+        self.Btn_projectFolder_Ana.clicked.connect(self.chooseProjectFolder_Ana)
+        self.Btn_lineageFile_Ana.clicked.connect(self.chooseLineageFile_Ana)
 
         # run all
         self.Btn_runAll.clicked.connect(self.runAll)
 
-        # self.LE_sliceNum_Ana.setText('68')
-        # self.LE_xyResolution_Ana.setText('0.09')
-        # self.LE_rawFolder_Ana.setText(r'E:\CityU\CShaperAPP\Data\MembRaw')
-        # self.LE_saveFolder_Ana.setText(r'E:\CityU\CShaperAPP\ResultCell')
-        # self.LE_stackFolder_Ana.setText(r'E:\CityU\CShaperAPP\Data\MembTest')
-        # self.LE_shapeUtil_Ana.setText(r'E:\CityU\CShaperAPP\ShapeUtil')
-
     def updateBlankInfo(self):
         if self.Function.currentIndex() == 1:
-            if self.LE_stackFolder.text() != '':
-                self.LE_stackFolder_Seg.setText(self.LE_stackFolder.text())
+            if self.LE_projectFolder.text() != '':
+                self.LE_projectFolder_Seg.setText(self.LE_projectFolder.text())
                 try:
                     self.CB_embryoNames_Seg.clear()
-                    listdir = os.listdir(self.LE_stackFolder.text())
-                    listdir.sort()
-                    self.CB_embryoNames_Seg.addItems(listdir)
+                    if os.path.isdir(os.path.join(self.LE_projectFolder.text(), "RawStack")):
+                        self.CB_embryoNames_Seg.clear()
+                        listdir = os.listdir(os.path.join(self.LE_projectFolder.text(), "RawStack"))
+                        listdir.sort()
+                        self.CB_embryoNames_Seg.addItems(listdir)
+                    else:
+                        os.makedirs(os.path.join(self.LE_projectFolder.text(), "RawStack"))
                 except Exception:
                     QMessageBox.warning(self, 'Warning!', 'Folder Error, Please check it!')
             if self.LE_maxTime.text() != '':
@@ -110,10 +72,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 self.LE_xyResolution_Ana.setText(self.LE_xyResolution.text())
             if self.LE_sliceNum.text() != '':
                 self.LE_sliceNum_Ana.setText(self.LE_sliceNum.text())
-            if self.LE_stackFolder_Seg.text() != '':
-                self.LE_stackFolder_Ana.setText(self.LE_stackFolder_Seg.text())
-            elif self.LE_stackFolder.text() != '':
-                self.LE_stackFolder_Ana.setText(self.LE_stackFolder.text())
+            if self.LE_projectFolder_Seg.text() != '':
+                self.LE_projectFolder_Ana.setText(self.LE_projectFolder_Seg.text())
+            elif self.LE_projectFolder.text() != '':
+                self.LE_projectFolder_Ana.setText(self.LE_projectFolder.text())
+            if self.LE_lineage.text() != '':
+                self.LE_lineage_Ana.setText(self.LE_lineage.text())
         # print( self.Function.currentIndex())
 
 
@@ -134,10 +98,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
-    def chooseStackFolder_Pre(self):
+    def chooseProjectFolder_Pre(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Stack Folder', './')
         try:
-            self.LE_stackFolder.setText(dirName)
+            self.LE_projectFolder.setText(dirName)
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
@@ -147,11 +111,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
             self.LE_lineage.setText(fileName)
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
-    def chooseShapeFile(self):
+    def chooseNumberDict(self):
         fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File',
-                                                                   './', "TXT Files(*.txt)")
+                                                                   './', "CSV Files(*.csv)")
         try:
-            self.LE_shapeFile.setText(fileName)
+            self.LE_numberDict.setText(fileName)
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
@@ -167,27 +131,19 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config["z_resolution"] = float(self.LE_zResolution.text())
             config["reduce_ratio"] = float(self.LE_reduceRatio.text())
             config["raw_folder"] = self.LE_rawFolder.text()
-            config["stack_folder"] = self.LE_stackFolder.text()
+            config["project_folder"] = self.LE_projectFolder.text()
             config["lineage_file"] = self.LE_lineage.text()
-            config["shape_file"] = self.LE_shapeFile.text()
+            config["number_dictionary"] = self.LE_numberDict.text()
         except Exception:
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
         self.LE_maxTime_Seg.setText(self.LE_maxTime.text())
         self.LE_sliceNum_Ana.setText(self.LE_sliceNum.text())
         self.call = False
         self.thread = PreprocessThread(config)
-        self.thread.signal.connect(self.PreprocessCallback)
+        self.thread.signal.connect(self.ThreadCallback)
         self.thread.start()
-        # if self.call == True:
-        #     QMessageBox.information(self, 'Preprocess', 'Preprocess success!')
-        # else:
-        #     QMessageBox.warning(self, 'Error!', 'Segmentation failed!')
-        # print(self.thread.finished())
-        # try:
-        #     combine_slices(config)
-        # except Exception as e:
-        #     QMessageBox.warning(self, 'Errors', 'Parameters error, please check your paras!')
-    def PreprocessCallback(self, call, func):
+
+    def ThreadCallback(self, call, func):
 
         if call:
             QMessageBox.information(self, func, func+' success!')
@@ -195,21 +151,18 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, 'Error!', func+' failed!')
         # print(call)
 
-    def chooseStackFolder_Seg(self):
+    def chooseProjectFolder_Seg(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Stack Folder', './')
         try:
-            self.LE_stackFolder_Seg.setText(dirName)
-            self.CB_embryoNames_Seg.clear()
-            listdir = os.listdir(dirName)
-            listdir.sort()
-            self.CB_embryoNames_Seg.addItems(listdir)
-        except Exception as e:
-            QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
-
-    def chooseSaveFolder_Seg(self):
-        dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
-        try:
-            self.LE_saveFolder_Seg.setText(dirName)
+            self.LE_projectFolder_Seg.setText(dirName)
+            # max_time = len(os.listdir(os.path.join(dirName, "RawStack")))
+            if os.path.isdir(os.path.join(dirName, "RawStack")):
+                self.CB_embryoNames_Seg.clear()
+                listdir = os.listdir(os.path.join(dirName, "RawStack"))
+                listdir.sort()
+                self.CB_embryoNames_Seg.addItems(listdir)
+            else:
+                os.makedirs(os.path.join(dirName, "RawStack"))
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
@@ -226,12 +179,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
         config = {}
         try:
             config['para']={}
-            config["para"]["stack_folder"] = self.LE_stackFolder_Seg.text()
+            config["para"]["project_folder"] = self.LE_projectFolder_Seg.text()
             en = []
             en.append(self.CB_embryoNames_Seg.currentText())
             config["para"]["embryo_names"] = en
             config["para"]["max_time"] = int(self.LE_maxTime_Seg.text())
-            config["para"]["save_folder"] = self.LE_saveFolder_Seg.text()
+            # config["para"]["save_folder"] = self.LE_saveFolder_Seg.text()
             config["para"]["batch_size"] = int(self.LE_batchSize_Seg.text())
             lineage = self.CB_lineage_Seg.currentText()
             if lineage == 'No lineage':
@@ -245,16 +198,16 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 config["para"]["nucleus_filter"] = True
 
             config["data"] = {}
-            config["data"]["data_root"] = config["para"]["stack_folder"]
+            config["data"]["data_root"] = os.path.join(config["para"]["project_folder"], "RawStack")
             config["data"]["data_names"] = config["para"]["embryo_names"]
             config["data"]["max_time"] = config["para"]["max_time"]
-            config["data"]["save_folder"] = config["para"]["save_folder"]
+            config["data"]["save_folder"] = os.path.join(config["para"]["project_folder"], "CellMembrane")
+
             config["data"]["with_ground_truth"] = False
             config["data"]["label_edt_transform"] = True
             config["data"]["valid_edt_width"] = 30
             config["data"]["label_edt_discrete"] = True
             config["data"]["edt_discrete_num"] = 16
-            config["data"]["save_folder"] = os.path.join(config["data"]["save_folder"], "BinaryMemb")
 
             config["network"] = {}
             config["network"]["net_type"] = "CShaper"
@@ -275,7 +228,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config["testing"]["post_process"] = True
 
             config["segdata"] = {}
-            config["segdata"]["membseg_path"] = os.path.dirname(config["data"]["save_folder"])
+            config["segdata"]["membseg_path"] = config["data"]["save_folder"]
             config["segdata"]["nucleus_data_root"] = config["data"]["data_root"]
 
             config["debug"] = {}
@@ -289,12 +242,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
         self.call = False
         self.thread = SegmentationThread(config)
-        self.thread.signal.connect(self.PreprocessCallback)
+        self.thread.signal.connect(self.ThreadCallback)
         self.thread.start()
-        # if self.call == True:
-        #     QMessageBox.information(self, 'Segmentation', 'Segmentation success!')
-        # else:
-        #     QMessageBox.warning(self, 'Error!', 'Segmentation failed!')
 
     def chooseRawFolder_Ana(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
@@ -307,24 +256,25 @@ class MainForm(QMainWindow, Ui_MainWindow):
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
-    def chooseStackFolder_Ana(self):
+    def chooseProjectFolder_Ana(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
         try:
-            self.LE_stackFolder_Ana.setText(dirName)
+            self.LE_projectFolder_Ana.setText(dirName)
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
-    def chooseSaveFolder_Ana(self):
-        dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
+    def chooseNumberDict_Ana(self):
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File',
+                                                                   './', "CSV Files(*.csv)")
         try:
-            self.LE_saveFolder_Ana.setText(dirName)
+            self.LE_numberDict_Ana.setText(fileName)
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
-    def chooseShapeUtil(self):
-        dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
+    def chooseLineageFile_Ana(self):
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File', './', "CSV Files(*.csv)")
         try:
-            self.LE_shapeUtil_Ana.setText(dirName)
+            self.LE_lineage_Ana.setText(fileName)
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
@@ -336,26 +286,19 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config['para']['num_slice'] = int(self.LE_sliceNum_Ana.text())
             config['para']['xy_resolution'] = float(self.LE_xyResolution_Ana.text())
             config['para']['raw_folder'] = self.LE_rawFolder_Ana.text()
-            config['para']['save_folder'] = self.LE_saveFolder_Ana.text()
             en = []
             en.append(self.CB_embryoNames_Ana.currentText())
             config["para"]["embryo_names"] = en
-            config['para']['stack_folder'] = self.LE_stackFolder_Ana.text()
+            config['para']['project_folder'] = self.LE_projectFolder_Ana.text()
             config['para']['first_run'] = False
-            config['para']["label_dict"] = self.LE_shapeUtil_Ana.text()
+            config['para']["number_dictionary"] = self.LE_numberDict_Ana.text()
+            config['para']["lineage_file"] = self.LE_lineage_Ana.text()
         except Exception:
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
         self.call = False
         self.thread = AnalysisThread(config)
-        self.thread.signal.connect(self.PreprocessCallback)
+        self.thread.signal.connect(self.ThreadCallback)
         self.thread.start()
-        # if self.call == True:
-        #     QMessageBox.information(self, 'Analysis', 'Analysis success!')
-        # else:
-        #     QMessageBox.warning(self, 'Error!', 'Segmentation failed!')
-
-
-
 
 
 if __name__ == '__main__':

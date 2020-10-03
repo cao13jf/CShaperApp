@@ -153,14 +153,8 @@ class SegmentationThread(QThread):
                         pred = delete_isolate_labels(pred_fusion)
                     else:
                         pred = prob_sagittal  # Regression prediction provides the MAP directly.
-                    if (config_test.get('save_binary_seg', False)):
-                        out_label = post_process_on_edt(pred).astype(np.int16)
-                    elif (config_test.get('save_predicted_map', False)):
-                        save_array_as_nifty_volume((pred).astype(np.int16),
-                                                   os.path.join("./ResultTem", "PredictedMap", emrbyo_name, img_names))
-                    else:
-                        sess.close()
-                        raise Exception('No distance map or binary segmentation is to be saved')
+
+                    out_label = post_process_on_edt(pred).astype(np.int16)
 
                     # ==============================================================
                     #               save prediction results as *.nii.gz
@@ -178,7 +172,6 @@ class SegmentationThread(QThread):
                     print(save_file)
                 test_time = np.asarray(test_time)
                 print('test time', test_time.mean())
-                np.savetxt(save_folder + '/test_time.txt', test_time)
                 sess.close()
 
                 del sess, dataloader, net
@@ -219,41 +212,39 @@ class AnalysisThread(QThread):
         self.wait()
 
     def run(self):
-        try:
+        # try:
             # config = self.config
             para_config = self.config['para']
             # print(para_config)
-            para_config["data_folder"] = para_config["stack_folder"]
-            para_config["save_nucleus_folder"] = os.path.join(para_config["save_folder"], "NucleusLoc")
-            para_config["seg_folder"] = os.path.join(para_config["save_folder"], "BinaryMembPostseg")
-            para_config["save_folder"] = os.path.join(para_config["save_folder"], "StatShape")
+            para_config["data_folder"] = os.path.join(para_config["project_folder"], "RawStack")
+            para_config["save_nucleus_folder"] = os.path.join(para_config["project_folder"], "NucleusLoc")
+            para_config["seg_folder"] = os.path.join(para_config["project_folder"], "CellMembranePostseg")
+            para_config["stat_folder"] = os.path.join(para_config["project_folder"], "StatShape")
             para_config["delete_tem_file"] = False
 
-
-            if not os.path.isdir(para_config['save_folder']):
-                os.makedirs(para_config['save_folder'])
+            if not os.path.isdir(para_config['stat_folder']):
+                os.makedirs(para_config['stat_folder'])
             # print(para_config)
-            embryo_names = para_config["embryo_names"]
+            # embryo_names = para_config["embryo_names"]
 
             # Get the size of the figure
-            example_embryo_folder = os.path.join(para_config["raw_folder"], embryo_names[0], "tif")
+            example_embryo_folder = os.path.join(para_config["raw_folder"], para_config["embryo_names"][0], "tif")
             example_img_file = glob.glob(os.path.join(example_embryo_folder, "*.tif"))
             raw_size = [para_config["num_slice"]] + list(np.asarray(Image.open(example_img_file[0])).shape)
             para_config["image_size"] = [raw_size[0], raw_size[2], raw_size[1]]
-            # print(para_config)
-            for embryo_name in embryo_names:
-                para_config["embryo_name"] = embryo_name
-                para_config["acetree_file"] = os.path.join(para_config["stack_folder"], para_config['embryo_name'],
-                                                           "CD" + para_config['embryo_name'] + ".csv")
-                if not os.path.isdir(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name'])):
-                    os.makedirs(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
-                else:
-                    shutil.rmtree(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
-                    os.makedirs(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
-                run_shape_analysis(para_config, embryo_name)
+
+            para_config["embryo_name"] = para_config["embryo_names"][0]
+            para_config["acetree_file"] = para_config["lineage_file"]
+            if not os.path.isdir(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name'])):
+                os.makedirs(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
+            else:
+                shutil.rmtree(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
+                os.makedirs(os.path.join(para_config['save_nucleus_folder'], para_config['embryo_name']))
+            run_shape_analysis(para_config)
+
             self.signal.emit(True, 'Analysis')
-        except Exception:
-            self.signal.emit(False, 'Analysis')
+        # except Exception:
+        #     self.signal.emit(False, 'Analysis')
 
 
 warnings.filterwarnings("ignore")
@@ -266,7 +257,7 @@ def init(l):  # used for parallel computing
     file_lock = l
 
 
-def run_shape_analysis(config, embryo_name):
+def run_shape_analysis(config):
     '''
     Extract the cell tree structure from the aceTree file
     :param acetree_file:  file name of the embryo acetree file
@@ -278,30 +269,30 @@ def run_shape_analysis(config, embryo_name):
     ## construct lineage tree whose nodes contain the time points that cell exist (based on nucleus).
     acetree_file = config['acetree_file']
     cell_tree, max_time = construct_celltree(acetree_file, config)
-    save_file_name = os.path.join(config['save_folder'], config['embryo_name']+'_time_tree.txt')
+    save_file_name = os.path.join(config['stat_folder'], config['embryo_name']+'_time_tree.txt')
 
     with open(save_file_name, 'wb') as f:
         pickle.dump(cell_tree, f)
     ## Parallel computing for the cell relation graph
-    if not os.path.isdir('./ShapeUtil/TemCellGraph'):
-        os.makedirs('./ShapeUtil/TemCellGraph')
-    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
-        number_dict = pickle.load(f)
+    if not os.path.isdir(os.path.join(config["project_folder"], 'TemCellGraph')):
+        os.makedirs(os.path.join(config["project_folder"], 'TemCellGraph'))
+
+    pd_number = pd.read_csv(config["number_dictionary"], names=["name", "label"])
+    number_dict = pd.Series(pd_number.label.values, index=pd_number.name).to_dict()
 
     # ========================================================
     #       sementing TPs in a parallel way
     # ========================================================
     file_lock = mp.Lock()  # |-----> for change treelib files
-    # print(file_lock, mp.cpu_count(), init)
-    mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))
+    print(file_lock, mp.cpu_count(), init)
+    mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))  # TODO: change `mp.cpu_count()-1` --> `2`
     configs = []
     config["cell_tree"] = cell_tree
     for itime in tqdm(range(1, max_time+1), desc="Compose configs"):
         config['time_point'] = itime
         configs.append(config.copy())
-    # print(configs)
     #     cell_graph_network(file_lock, config)
-    # print(embryo_name)
+    embryo_name = config["embryo_names"][0]
     for _ in tqdm(mpPool.imap_unordered(cell_graph_network, configs), total=len(configs), desc="Naming {} segmentations".format(embryo_name)):
         pass
 
@@ -314,19 +305,19 @@ def run_shape_analysis(config, embryo_name):
     # #  Data can be deleted.
     construct_stat_embryo(cell_tree, max_time)  # initilize the shape matrix which is use to store the shape series information
     for itime in tqdm(range(1, max_time+1), desc='assembling {} result'.format(embryo_name)):
-        file_name = os.path.join('./ShapeUtil/TemCellGraph', config['embryo_name'], config['embryo_name']+'_T'+str(itime)+'.txt')
+        file_name = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name']+'_T'+str(itime)+'.txt')
         with open(file_name, 'rb') as f:
             cell_graph = pickle.load(f)
             stat_embryo = assemble_result(cell_graph, itime, number_dict)
     if config['delete_tem_file']:  # If need to delete temporary files.
-        shutil.rmtree('./ShapeUtil/TemCellGraph')
+        shutil.rmtree(os.path.join(config["project_folder"], 'TemCellGraph'))
     # save statistical embryonic files
     # delete columns with all zeros for efficiency
     stat_embryo = stat_embryo.loc[:, ((stat_embryo != 0)&(~np.isnan(stat_embryo))).any(axis=0)]
-    save_file_name = os.path.join(config['save_folder'], config['embryo_name']+'_Stat.txt')
-    save_file_name_csv = os.path.join(config['save_folder'], config['embryo_name']+'_Stat.csv')
-    if not os.path.isdir(config['save_folder']):
-        os.makedirs(config['save_folder'])
+    save_file_name = os.path.join(config['stat_folder'], config['embryo_name']+'_stat.txt')
+    save_file_name_csv = os.path.join(config['stat_folder'], config['embryo_name']+'_stat.csv')
+    if not os.path.isdir(config['stat_folder']):
+        os.makedirs(config['stat_folder'])
     with open(save_file_name, 'wb') as f:
         pickle.dump(stat_embryo, f)
         stat_embryo.to_csv(save_file_name_csv)
@@ -341,14 +332,13 @@ def cell_graph_network(config):
     '''
     time_point = config['time_point']
     seg_file = os.path.join(config['seg_folder'], config['embryo_name'], config['embryo_name']+"_"+str(time_point).zfill(3)+'_segCell.nii.gz')
-    nucleus_loc_file = os.path.join('./ShapeUtil/TemCellGraph', config['embryo_name'], config['embryo_name']+"_"+str(time_point).zfill(3)+'_nucLoc'+'.txt')  # read nucleus location Data
-    print(nucleus_loc_file)
+    nucleus_loc_file = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name']+"_"+str(time_point).zfill(3)+'_nucLoc'+'.txt')  # read nucleus location Data
+
 
     #  Load the dictionary of cell and it's coresponding number in the dictionary
-    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
-        number_dict = pickle.load(f)
-    with open(os.path.join(config["label_dict"], 'name_dictionary.txt'), 'rb') as f:
-        name_dict = pickle.load(f)
+    pd_number = pd.read_csv(config["number_dictionary"], names=["name", "label"])
+    number_dict = pd.Series(pd_number.label.values, index=pd_number.name).to_dict()
+    name_dict = {value: key for key, value in number_dict.items()}
 
     ## unify the labels in the segmentation and that in the aceTree information
     division_seg, nuc_position = unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config)
@@ -371,7 +361,7 @@ def cell_graph_network(config):
     relation_graph = add_relation(point_graph, division_seg, name_dict)
 
     # nx.draw(relation_graph, pos=nuc_position, with_labels=True, node_size=100, font_color='b', edge_cmap=plt.cm.Blues)  # TODO: better visualization on graph
-    file_name = os.path.join('./ShapeUtil/TemCellGraph', config['embryo_name'], config['embryo_name'] + '_T' + str(config['time_point']) + '.txt')
+    file_name = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name'] + '_T' + str(config['time_point']) + '.txt')
     with open(file_name, 'wb') as f:
         pickle.dump(relation_graph, f)
 
@@ -385,10 +375,11 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
     :return unify_seg: cell segmentation with labels unified
     :return nuc_positions: nucleus positions with labels
     '''
-    with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
-        number_dict = pickle.load(f)
-    with open(os.path.join(config["label_dict"], 'name_dictionary.txt'), 'rb') as f:
-        name_dict = pickle.load(f)
+
+    pd_number = pd.read_csv(config["number_dictionary"], names=["name", "label"])
+    number_dict = pd.Series(pd_number.label.values, index=pd_number.name).to_dict()
+
+    name_dict = {value: key for key, value in number_dict.items()}
     cell_tree = config["cell_tree"]
 
     df = pd.read_csv(config['acetree_file'])
@@ -414,7 +405,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
                                                   f'x_{seg.shape[2]}':nucleus_location_zoom[:, 2], f'y_{seg.shape[1]}':nucleus_location_zoom[:, 1],
                                                   f'z_{seg.shape[0]}':nucleus_location_zoom[:, 0]})
     save_name = os.path.join(config['save_nucleus_folder'], config['embryo_name'], config['embryo_name']+"_"+str(time_point).zfill(3)+'_nucLoc'+'.csv')
-    save_name_fast_read = os.path.join('./ShapeUtil/TemCellGraph', config['embryo_name'], config['embryo_name']+"_"+str(time_point).zfill(3)+'_nucLoc'+'.txt')
+    save_name_fast_read = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name']+"_"+str(time_point).zfill(3)+'_nucLoc'+'.txt')
     ##################################################
     #  unify the segmentation label
     unify_seg = np.zeros_like(seg)  #TODO: update cell mother daughter's label
@@ -426,7 +417,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
         target_label = nucleus_number[i]
         if "Nuc" in nucleus_names[i]:  # ignore all SegCell starting with "Nuc****"
             nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == target_label, "note"] = "lost_hole"
-            update_time_tree(config['embryo_name'], name_dict[target_label], time_point, file_lock, add=False)
+            update_time_tree(config['embryo_name'], name_dict[target_label], time_point, file_lock, config, add=False)
             continue
         raw_label = seg[nucleus_loc[0], nucleus_loc[1], nucleus_loc[2]]
         update_flag = changed_flag[nucleus_loc[0], nucleus_loc[1], nucleus_loc[2]]
@@ -462,21 +453,21 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
                         nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == mother_label, "surface"] = surface_area * (config["res"] ** 2)
                         # update daughter SegCell information
                         nucleus_loc_to_save = update_daughter_info(nucleus_loc_to_save, ch1, ch2, mother_name)
-                        update_time_tree(config['embryo_name'], mother_name, time_point, file_lock, add=True)
-                        update_time_tree(config['embryo_name'], ch1, time_point, file_lock, add=False)
-                        update_time_tree(config['embryo_name'], ch2, time_point, file_lock, add=False)
+                        update_time_tree(config['embryo_name'], mother_name, time_point, file_lock, config, add=True)
+                        update_time_tree(config['embryo_name'], ch1, time_point, file_lock, config, add=False)
+                        update_time_tree(config['embryo_name'], ch2, time_point, file_lock, config, add=False)
                     else:
                         # The nucleus is also occupied
                         nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == target_label, "note"] = "lost_inner1"
-                        update_time_tree(config['embryo_name'], name_dict[target_label], time_point, file_lock, add=False)
+                        update_time_tree(config['embryo_name'], name_dict[target_label], time_point, file_lock, config, add=False)
                 else:
                     # nucleus is occupied by strangers
                     nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label == target_label, "note"] = "lost_inner2"
-                    update_time_tree(config['embryo_name'], name_dict[target_label], time_point, file_lock, add=False)
+                    update_time_tree(config['embryo_name'], name_dict[target_label], time_point, file_lock, config, add=False)
         else:
             # nucleus locates in the background
             nucleus_loc_to_save.loc[nucleus_loc_to_save.nucleus_label==target_label, "note"] = "lost_hole"
-            update_time_tree(config['embryo_name'], name_dict[target_label], time_point, file_lock, add=False)
+            update_time_tree(config['embryo_name'], name_dict[target_label], time_point, file_lock, config, add=False)
 
     check_folder_exist(save_name)
     nucleus_loc_to_save.to_csv(save_name, index=False) ######################
@@ -659,7 +650,7 @@ def get_surface_area(cell_mask):
     :param cell_mask: single cell mask
     :return surface_are: cell's surface are
     '''
-    # ball_structure = morphology.cube(3) # TODO
+    # ball_structure = morphology.cube(3)
     # erased_mask = ndimage.binary_erosion(cell_mask, ball_structure, iterations=1)
     # surface_area = np.logical_and(~erased_mask, cell_mask).sum()
     verts, faces, _, _ = marching_cubes_lewiner(cell_mask)
@@ -668,7 +659,7 @@ def get_surface_area(cell_mask):
     return surface
 
 
-def update_time_tree(embryo_name, cell_name, time_point, file_lock, add=False):
+def update_time_tree(embryo_name, cell_name, time_point, file_lock, config, add=False):
     '''
     Update cell lineage tree. Such as two nuclei in dividing cell are merged into one.
     :param embryo_name: embryo's name
@@ -680,7 +671,7 @@ def update_time_tree(embryo_name, cell_name, time_point, file_lock, add=False):
     '''
     file_lock.acquire()
     try:
-        with open("./ResultCell/test_embryo_robust/statShape/{}_time_tree.txt".format(embryo_name), 'rb') as f:
+        with open(os.path.join(config["stat_folder"], "{}_time_tree.txt".format(embryo_name)), 'rb') as f:
             time_tree = pickle.load(f)
         origin_times = time_tree.get_node(cell_name).data.get_time()
         if add:
@@ -688,7 +679,7 @@ def update_time_tree(embryo_name, cell_name, time_point, file_lock, add=False):
         else:
             origin_times.remove(time_point)
         time_tree.get_node(cell_name).data.set_time(origin_times)
-        with open("./ResultCell/test_embryo_robust/statShape/{}_time_tree.txt".format(embryo_name), 'wb') as f:
+        with open(os.path.join(config["stat_folder"], "{}_time_tree.txt".format(embryo_name)), 'wb') as f:
             pickle.dump(time_tree, f)
     except:
         pass
