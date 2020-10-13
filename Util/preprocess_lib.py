@@ -52,7 +52,8 @@ def combine_slices(config):
         configs = []
         for tp in range(1, max_time + 1):
             configs.append((origin_folder, target_folder, embryo_name, tp, out_size, num_slice, out_res))
-        for _ in tqdm(mpPool.starmap(stack_nuc_slices, configs), total=len(configs), desc="Stack nucleus of {}".format(embryo_name)):
+        for idx, _ in enumerate(tqdm(mpPool.imap_unordered(stack_nuc_slices, configs), total=len(configs), desc="1/3 Stack nucleus of {}".format(embryo_name))):
+            # TODO: Process Name: `1/3 Stack nucleus`; Current status: `idx`; Final status: max_time
             pass
             # stack_nuc_slices(raw_folder=origin_folder, save_folder=target_folder, embryo_name=embryo_name, tp=tp,
             #                  out_size=out_size, num_slice=num_slice, res=out_res)
@@ -66,7 +67,8 @@ def combine_slices(config):
         configs = []
         for tp in range(1, max_time + 1):
             configs.append((origin_folder, target_folder, embryo_name, tp, out_size, num_slice, out_res))
-        for _ in tqdm(mpPool.starmap(stack_memb_slices, configs), total=len(configs), desc="Stack membrane of {}".format(embryo_name)):
+        for idx, _ in enumerate(tqdm(mpPool.imap_unordered(stack_memb_slices, configs), total=len(configs), desc="2/3 Stack membrane of {}".format(embryo_name))):
+            # TODO: Process Name: `2/3 Stack membrane`; Current status: `idx`; Final status: max_time
             pass
         # for tp in range(1, max_time+1):
         #     stack_memb_slices(raw_folder=origin_folder, save_folder=target_folder, embryo_name=embryo_name, tp=tp,
@@ -97,8 +99,9 @@ def combine_slices(config):
             configs = []
             for tp in range(1, max_time + 1):
                 configs.append((embryo_name, number_dict, pd_lineage, tp, raw_size, out_size, out_res, xy_res/z_res, target_folder))
-            for _ in tqdm(mpPool.starmap(save_nuc_seg, configs), total=len(configs),
-                          desc="Construct nucleus location of {}".format(embryo_name)):
+            for idx, _ in enumerate(tqdm(mpPool.imap_unordered(save_nuc_seg, configs), total=len(configs),
+                          desc="3/3 Construct nucleus location of {}".format(embryo_name))):
+                # TODO: Process Name: `3/3 Construct nucleus location`; Current status: `idx`; Final status: max_time
                 pass
             # for tp in range(1, max_time+1):
             #     save_nuc_seg(embryo_name=embryo_name,
@@ -115,7 +118,9 @@ def combine_slices(config):
 # ============================================
 # save raw nucleus stack
 # ============================================
-def stack_nuc_slices(raw_folder, save_folder, embryo_name, tp, out_size, num_slice, res):
+def stack_nuc_slices(para):
+    [raw_folder, save_folder, embryo_name, tp, out_size, num_slice, res] = para
+
     out_stack = []
     save_file_name = "{}_{}_rawNuc.nii.gz".format(embryo_name, str(tp).zfill(3))
     for i_slice in range(1, num_slice+1):
@@ -134,7 +139,9 @@ def stack_nuc_slices(raw_folder, save_folder, embryo_name, tp, out_size, num_sli
 # ============================================
 # save raw membrane stack
 # ============================================
-def stack_memb_slices(raw_folder, save_folder, embryo_name, tp, out_size, num_slice, res):
+def stack_memb_slices(para):
+    [raw_folder, save_folder, embryo_name, tp, out_size, num_slice, res] = para
+
     out_stack = []
     save_file_name = "{}_{}_rawMemb.nii.gz".format(embryo_name, str(tp).zfill(3))
     for i_slice in range(1, num_slice+1):
@@ -153,7 +160,8 @@ def stack_memb_slices(raw_folder, save_folder, embryo_name, tp, out_size, num_sl
 # =============================================
 # save nucleus segmentation
 # =============================================
-def save_nuc_seg(embryo_name, name_dict, pd_lineage, tp, raw_size, out_size, out_res, dif_res, save_folder):
+def save_nuc_seg(para):
+    [embryo_name, name_dict, pd_lineage, tp, raw_size, out_size, out_res, dif_res, save_folder] = para
 
     zoom_ratio = [y / x for x, y in zip(raw_size, out_size)]
     tp_lineage = pd_lineage[pd_lineage["time"] == tp]

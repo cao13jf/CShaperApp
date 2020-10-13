@@ -14,7 +14,6 @@ from Util.parse_config import parse_config
 
 def post_process(config):
 
-    print('Begin postprocessing')
     config_segdata = config['segdata']
     membseg_path = config_segdata['membseg_path']
 
@@ -34,8 +33,16 @@ def post_process(config):
             parameters.append([one_embryo,file_name, config])
 
     mpPool = mp.Pool(mp.cpu_count()-1)
-    for _ in tqdm(mpPool.imap_unordered(run_post, parameters), total=len(parameters)):
+    for idx, _ in enumerate(tqdm(mpPool.imap_unordered(run_post, parameters), total=len(parameters), desc="Segment binary membrane to cells")):
+        # TODO: Process name: `Segment binary membrane to cells`;  current status: `idx`; final status: `len(parameters)`;
         pass
+
+#    mpPool = mp.Pool(3)
+#    for i in range(len(parameters)):
+#        print(i)
+#        mpPool.apply_async(run_post, parameters[i])
+#    mpPool.close()
+#    mpPool.join()
 
 
 def run_post(para):
@@ -166,7 +173,7 @@ def run_post(para):
     if config_result['nucleus_filter'] and (not config_result["nucleus_as_seed"]):
         nucleus_seg = nib.load(os.path.join(config_segdata['nucleus_data_root'], one_embryo, "SegNuc", one_embryo+"_"+tp_str+"_segNuc.nii.gz"))
         nucleus_seg = nucleus_seg.get_fdata().transpose([2, 1, 0])
-        merged_seg, holes = cell_prob_with_nucleus(merged_seg, nucleus_seg) #TODO: some nucleus are lost in the nucleus stack, so acetree is used to filter gaps when naming each segmented region
+        merged_seg, holes = cell_prob_with_nucleus(merged_seg, nucleus_seg)
         if holes.sum() != 0:
             save_nii(holes, os.path.join(config_result['postseg_folder'], one_embryo+"Cavity", one_embryo + "_" + tp_str.zfill(3) + "_segCavity.nii.gz"))
 
@@ -188,9 +195,6 @@ def run_post(para):
         save_nii(cell_without_memb, os.path.join(save_folder, one_embryo, one_embryo + "_" + tp_str.zfill(3) + "_segCell.nii.gz"))
     else:
         raise ValueError('No FINAL result to be saved!')
-
-    print('Finished: ', one_embryo, '--->', tp_str)
-
 
 def save_nii(img, nii_name):
     nii_folder = os.path.dirname(nii_name)

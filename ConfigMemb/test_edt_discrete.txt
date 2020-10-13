@@ -4,24 +4,20 @@
 embryo_names        = [181210plc1p1]
 xy_resolution       = 0.09
 z_resolution        = 0.42
-max_time            = 30
+max_time            = 10
 reduce_ratio        = 0.30
 num_slice           = 68
 raw_folder          = ./Data/MembRaw
 lineage_file        = ./Data/MembRaw/181210plc1p1/aceNuc/CD181210plc1p1.csv
-# TODO: shape_file --> name_dictionary in GUI
 number_dictionary         = ./Resource/number_dictionary.csv
-# TODO: change `stack_folder` --> `project folder`
 project_folder      = TestProject
 
 # parameters for `test_edt.py`
 # <-- project_folder        = TestProject
 # <-- embryo_names        = [181210plc1p1]
 # <-- max_time            = 5
-# TODO: Delete save_folder
 batch_size          = 1
 # following two choices should be either True|False or False|True
-# TODO: Add this `model_file` option
 model_file          = ./Resource/TrainedModel/DMapNet_PUB_5000.ckpt
 nucleus_as_seed     = False
 nucleus_filter      = True

@@ -102,6 +102,6 @@ def prediction_fusion(prob_sagittal, prob_axial):
     pred_axial = np.argmax(prob_axial, axis=-1).astype(np.uint16)
     pred_sagittal = np.argmax(prob_sagittal, axis=-1).astype(np.int16)
     pred_fused = np.copy(pred_sagittal)
-    pred_fused[idx, idy, idz] = pred_axial[idx, idy, idz]  # TODO: this step is too time-consuming
+    pred_fused[idx, idy, idz] = pred_axial[idx, idy, idz]
 
     return pred_fused

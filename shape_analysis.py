@@ -58,7 +58,7 @@ def run_shape_analysis(config):
     # ========================================================
     file_lock = mp.Lock()  # |-----> for change treelib files
     print(file_lock, mp.cpu_count(), init)
-    mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))  # TODO: change `mp.cpu_count()-1` --> `2`
+    mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))
     configs = []
     config["cell_tree"] = cell_tree
     for itime in tqdm(range(1, max_time+1), desc="Compose configs"):
@@ -66,7 +66,8 @@ def run_shape_analysis(config):
         configs.append(config.copy())
     #     cell_graph_network(file_lock, config)
     embryo_name = config["embryo_names"][0]
-    for _ in tqdm(mpPool.imap_unordered(cell_graph_network, configs), total=len(configs), desc="Naming {} segmentations".format(embryo_name)):
+    for idx, _ in enumerate(tqdm(mpPool.imap_unordered(cell_graph_network, configs), total=len(configs), desc="Naming {} segmentations".format(embryo_name))):
+        # TODO: Process name: `Naming segmentations`; Current state: idx; Final state: `max_time`
         pass
 
 
@@ -82,18 +83,38 @@ def run_shape_analysis(config):
         with open(file_name, 'rb') as f:
             cell_graph = pickle.load(f)
             stat_embryo = assemble_result(cell_graph, itime, number_dict)
+
+    # =======================================================
+    # Combine all surfaces and volumes in one single file
+    # =======================================================
+    # combien all volume and surface informace
+    if not os.path.isdir(os.path.join(config['stat_folder'], embryo_name)):
+        os.makedirs(os.path.join(config['stat_folder'], embryo_name))
+    volume_lists = []
+    surface_lists = []
+    for t in tqdm(range(1, max_time + 1), desc="Generate surface and volume {}".format(embryo_name.split('/')[-1])):
+        nucleus_loc_file = os.path.join(config["save_nucleus_folder"], embryo_name, os.path.basename(embryo_name)+"_"+str(t).zfill(3)+"_nucLoc"+".csv")
+        pd_loc = pd.read_csv(nucleus_loc_file)
+        cell_volume_surface = pd_loc[["nucleus_name", "volume", "surface"]]
+        cell_volume_surface = cell_volume_surface.set_index("nucleus_name")
+        volume_lists.append(cell_volume_surface["volume"].to_frame().T.dropna(axis=1))
+        surface_lists.append(cell_volume_surface["surface"].to_frame().T.dropna(axis=1))
+    volume_stat = pd.concat(volume_lists, keys=range(1, max_time+1), ignore_index=True, axis=0, sort=False, join="outer")
+    surface_stat = pd.concat(surface_lists, keys=range(1, max_time+1), ignore_index=True, axis=0, sort=False, join="outer")
+    volume_stat.to_csv(os.path.join(config["stat_folder"], embryo_name, embryo_name.split('/')[-1] + "_volume"+'.csv'))
+    surface_stat.to_csv(os.path.join(config["stat_folder"], embryo_name, embryo_name.split('/')[-1] + "_surface"+'.csv'))
+
+
     if config['delete_tem_file']:  # If need to delete temporary files.
         shutil.rmtree(os.path.join(config["project_folder"], 'TemCellGraph'))
     # save statistical embryonic files
     # delete columns with all zeros for efficiency
     stat_embryo = stat_embryo.loc[:, ((stat_embryo != 0)&(~np.isnan(stat_embryo))).any(axis=0)]
-    save_file_name = os.path.join(config['stat_folder'], config['embryo_name']+'_stat.txt')
-    save_file_name_csv = os.path.join(config['stat_folder'], config['embryo_name']+'_stat.csv')
-    if not os.path.isdir(config['stat_folder']):
-        os.makedirs(config['stat_folder'])
-    with open(save_file_name, 'wb') as f:
-        pickle.dump(stat_embryo, f)
-        stat_embryo.to_csv(save_file_name_csv)
+    save_file_name = os.path.join(config['stat_folder'], embryo_name, config['embryo_name']+'_contact.txt')
+    save_file_name_csv = os.path.join(config['stat_folder'], embryo_name, config['embryo_name']+'_contact.csv')
+    # with open(save_file_name, 'wb') as f:
+        # pickle.dump(stat_embryo, f)
+    stat_embryo.to_csv(save_file_name_csv)
 
 
 def cell_graph_network(config):
@@ -133,7 +154,7 @@ def cell_graph_network(config):
 
     relation_graph = add_relation(point_graph, division_seg, name_dict)
 
-    # nx.draw(relation_graph, pos=nuc_position, with_labels=True, node_size=100, font_color='b', edge_cmap=plt.cm.Blues)  # TODO: better visualization on graph
+    # nx.draw(relation_graph, pos=nuc_position, with_labels=True, node_size=100, font_color='b', edge_cmap=plt.cm.Blues)
     file_name = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name'] + '_T' + str(config['time_point']) + '.txt')
     with open(file_name, 'wb') as f:
         pickle.dump(relation_graph, f)
@@ -181,7 +202,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
     save_name_fast_read = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name']+"_"+str(time_point).zfill(3)+'_nucLoc'+'.txt')
     ##################################################
     #  unify the segmentation label
-    unify_seg = np.zeros_like(seg)  #TODO: update cell mother daughter's label
+    unify_seg = np.zeros_like(seg)
     changed_flag = np.zeros_like(seg)  # to label whether a cell has been updated with labels in the nucleus stack.
     nucleus_loc_to_save["volume"] = "" ################### Used for wrting cell information
     nucleus_loc_to_save["surface"] = "" ################### Used for wrting cell information
@@ -251,7 +272,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
     ##  deal with dividing SegCell
     raw_labels = list(seg[nucleus_location_zoom[:, 0], nucleus_location_zoom[:, 1], nucleus_location_zoom[:, 2]])
     repeat_labels = [[i, label] for i, label in enumerate(raw_labels) if raw_labels.count(label) > 1]
-    repeat_labels = [x for x in repeat_labels if x[1] != 0]  # Label with 0 is the missed cell #TODO
+    repeat_labels = [x for x in repeat_labels if x[1] != 0]  # Label with 0 is the missed cell
     # reset all labels to their parent label
     division_seg = unify_seg.copy()
     cell_locations = [list(x) for x in list(nucleus_location_zoom)]
@@ -268,7 +289,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
         division_seg[unify_seg == number_dict[cell_name]] = parent_label
         if name_dict[parent_label] not in cell_names:
             cell_names.append(name_dict[parent_label])
-            cell_locations.append(list(nucleus_location_zoom[repeat_label[0]]))  # TODO: change this when plot in 3D
+            cell_locations.append(list(nucleus_location_zoom[repeat_label[0]]))
     nuc_positions = dict(zip(cell_names, cell_locations)) # ABalappap
 
     return unify_seg, nuc_positions

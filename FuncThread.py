@@ -285,7 +285,7 @@ def run_shape_analysis(config):
     # ========================================================
     file_lock = mp.Lock()  # |-----> for change treelib files
     print(file_lock, mp.cpu_count(), init)
-    mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))  # TODO: change `mp.cpu_count()-1` --> `2`
+    mpPool = mp.Pool(mp.cpu_count()-1, initializer=init, initargs=(file_lock,))
     configs = []
     config["cell_tree"] = cell_tree
     for itime in tqdm(range(1, max_time+1), desc="Compose configs"):
@@ -360,7 +360,7 @@ def cell_graph_network(config):
 
     relation_graph = add_relation(point_graph, division_seg, name_dict)
 
-    # nx.draw(relation_graph, pos=nuc_position, with_labels=True, node_size=100, font_color='b', edge_cmap=plt.cm.Blues)  # TODO: better visualization on graph
+    # nx.draw(relation_graph, pos=nuc_position, with_labels=True, node_size=100, font_color='b', edge_cmap=plt.cm.Blues)
     file_name = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name'] + '_T' + str(config['time_point']) + '.txt')
     with open(file_name, 'wb') as f:
         pickle.dump(relation_graph, f)
@@ -408,7 +408,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
     save_name_fast_read = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name']+"_"+str(time_point).zfill(3)+'_nucLoc'+'.txt')
     ##################################################
     #  unify the segmentation label
-    unify_seg = np.zeros_like(seg)  #TODO: update cell mother daughter's label
+    unify_seg = np.zeros_like(seg)  #
     changed_flag = np.zeros_like(seg)  # to label whether a cell has been updated with labels in the nucleus stack.
     nucleus_loc_to_save["volume"] = "" ################### Used for wrting cell information
     nucleus_loc_to_save["surface"] = "" ################### Used for wrting cell information
@@ -478,7 +478,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
     ##  deal with dividing SegCell
     raw_labels = list(seg[nucleus_location_zoom[:, 0], nucleus_location_zoom[:, 1], nucleus_location_zoom[:, 2]])
     repeat_labels = [[i, label] for i, label in enumerate(raw_labels) if raw_labels.count(label) > 1]
-    repeat_labels = [x for x in repeat_labels if x[1] != 0]  # Label with 0 is the missed cell #TODO
+    repeat_labels = [x for x in repeat_labels if x[1] != 0]  # Label with 0 is the missed cell
     # reset all labels to their parent label
     division_seg = unify_seg.copy()
     cell_locations = [list(x) for x in list(nucleus_location_zoom)]
@@ -495,7 +495,7 @@ def unify_label_seg_and_nuclues(file_lock, time_point, seg_file, config):
         division_seg[unify_seg == number_dict[cell_name]] = parent_label
         if name_dict[parent_label] not in cell_names:
             cell_names.append(name_dict[parent_label])
-            cell_locations.append(list(nucleus_location_zoom[repeat_label[0]]))  # TODO: change this when plot in 3D
+            cell_locations.append(list(nucleus_location_zoom[repeat_label[0]]))
     nuc_positions = dict(zip(cell_names, cell_locations)) # ABalappap
 
     return unify_seg, nuc_positions

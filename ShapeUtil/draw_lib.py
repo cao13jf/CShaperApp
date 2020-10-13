@@ -14,7 +14,6 @@ import matplotlib.pyplot as plt
 def draw_relation_graph(relation_graph, nuc_position):
 
     # nx.draw(relation_graph, pos=nuc_position, with_labels=True, node_size=100, font_color='b',
-    #         edge_cmap=plt.cm.Blues)  # TODO: better visualization on graph
     edges, weights = zip(*nx.get_edge_attributes(relation_graph, 'area').items())
 
     nx.draw(relation_graph, node_size=100, edgelist=edges, edge_color=weights, width=3, \
