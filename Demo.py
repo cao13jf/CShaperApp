@@ -25,11 +25,24 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.Btn_lineageFile.clicked.connect(self.chooseLineageFile_Pre)
         self.Btn_runPreprocess.clicked.connect(self.runPreprocess)
         self.Btn_numberDict.clicked.connect(self.chooseNumberDict)
+        self.Btn_stopPreprocess.clicked.connect(self.stopPreprocess)
+
+        # self.LE_rawFolder.setText('/Users/admin/cuhk/CShaperAPP/Data/MembRaw')
+        # self.CB_embryoNames.setCurrentText('181210plc1p1')
+        # self.LE_xyResolution.setText('0.09')
+        # self.LE_zResolution.setText('0.42')
+        # self.LE_reduceRatio.setText('0.3')
+        # self.LE_sliceNum.setText('68')
+        # self.LE_maxTime.setText('5')
+        # self.LE_projectFolder.setText('/Users/admin/cuhk/CShaperAPP/TestProject')
+        # self.LE_lineage.setText('/Users/admin/cuhk/CShaperAPP/Data/MembRaw/181210plc1p1/aceNuc/CD181210plc1p1.csv')
+        # self.LE_numberDict.setText('/Users/admin/cuhk/CShaperAPP/Resource/number_dictionary.csv')
 
         # test_edt.py
         self.Btn_projectFolder_Seg.clicked.connect(self.chooseProjectFolder_Seg)
         self.Btn_modelFile_Seg.clicked.connect(self.chooseModelFile_Seg)
         self.Btn_runSegmentation.clicked.connect(self.runSegmentation)
+        self.Btn_stopSegmentation.clicked.connect(self.stopSegmentation)
 
         # shape_analysis.py
         self.Btn_runAnalysis.clicked.connect(self.runAnalysis)
@@ -37,6 +50,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.Btn_rawFolder_Ana.clicked.connect(self.chooseRawFolder_Ana)
         self.Btn_projectFolder_Ana.clicked.connect(self.chooseProjectFolder_Ana)
         self.Btn_lineageFile_Ana.clicked.connect(self.chooseLineageFile_Ana)
+        self.Btn_stopAnalysis.clicked.connect(self.stopAnalysis)
 
         # run all
         self.Btn_runAll.clicked.connect(self.runAll)
@@ -139,9 +153,16 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.LE_maxTime_Seg.setText(self.LE_maxTime.text())
         self.LE_sliceNum_Ana.setText(self.LE_sliceNum.text())
         self.call = False
-        self.thread = PreprocessThread(config)
-        self.thread.signal.connect(self.ThreadCallback)
-        self.thread.start()
+        self.pthread = PreprocessThread(config)
+        self.pthread.signal.connect(self.ThreadCallback)
+        self.pthread.start()
+
+    def stopPreprocess(self):
+        try:
+            self.pthread.terminate()
+            QMessageBox.information(self, 'Tips', 'Preprocess has been terminated.')
+        except Exception:
+            QMessageBox.warning(self, 'Warning!', 'Preprocess has not been started.')
 
     def ThreadCallback(self, call, func):
 
@@ -241,9 +262,16 @@ class MainForm(QMainWindow, Ui_MainWindow):
         except Exception:
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
         self.call = False
-        self.thread = SegmentationThread(config)
-        self.thread.signal.connect(self.ThreadCallback)
-        self.thread.start()
+        self.sthread = SegmentationThread(config)
+        self.sthread.signal.connect(self.ThreadCallback)
+        self.sthread.start()
+
+    def stopSegmentation(self):
+        try:
+            self.sthread.terminate()
+            QMessageBox.information(self, 'Tips', 'Segmentation has been terminated.')
+        except Exception:
+            QMessageBox.warning(self, 'Warning!', 'Segmentation has not been started.')
 
     def chooseRawFolder_Ana(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
@@ -296,9 +324,16 @@ class MainForm(QMainWindow, Ui_MainWindow):
         except Exception:
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
         self.call = False
-        self.thread = AnalysisThread(config)
-        self.thread.signal.connect(self.ThreadCallback)
-        self.thread.start()
+        self.athread = AnalysisThread(config)
+        self.athread.signal.connect(self.ThreadCallback)
+        self.athread.start()
+
+    def stopAnalysis(self):
+        try:
+            self.athread.terminate()
+            QMessageBox.information(self, 'Tips', 'Analysis has been terminated.')
+        except Exception:
+            QMessageBox.warning(self, 'Warning!', 'Analysis has not been started.')
 
 
 if __name__ == '__main__':

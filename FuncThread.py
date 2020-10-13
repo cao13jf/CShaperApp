@@ -212,7 +212,7 @@ class AnalysisThread(QThread):
         self.wait()
 
     def run(self):
-        # try:
+        try:
             # config = self.config
             para_config = self.config['para']
             # print(para_config)
@@ -243,8 +243,8 @@ class AnalysisThread(QThread):
             run_shape_analysis(para_config)
 
             self.signal.emit(True, 'Analysis')
-        # except Exception:
-        #     self.signal.emit(False, 'Analysis')
+        except Exception:
+            self.signal.emit(False, 'Analysis')
 
 
 warnings.filterwarnings("ignore")

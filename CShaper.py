@@ -382,7 +382,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menuAbout.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.Function.setCurrentIndex(2)
+        self.Function.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
@@ -442,7 +442,7 @@ class Ui_MainWindow(object):
         self.Btn_rawFolder_Ana.setText(_translate("MainWindow", "Choose"))
         self.Btn_projectFolder_Ana.setText(_translate("MainWindow", "Choose"))
         self.label_10.setText(_translate("MainWindow", "Lineage File:"))
-        self.Btn_lineageFile_Ana.setText(_translate("MainWindow", "PushButton"))
+        self.Btn_lineageFile_Ana.setText(_translate("MainWindow", "Choose"))
         self.Btn_stopAnalysis.setText(_translate("MainWindow", "Stop Analysis"))
         self.Function.setTabText(self.Function.indexOf(self.Analysis), _translate("MainWindow", "Analysis"))
         self.label_7.setText(_translate("MainWindow", "Show Stastical Result"))
