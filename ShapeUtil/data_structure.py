@@ -58,7 +58,7 @@ def construct_celltree(nucleus_file, config):
         with open(os.path.join(os.path.dirname(config["number_dictionary"]), 'name_dictionary.txt'), 'wb') as f:
             pickle.dump(dict(zip(range(1, len(cell_list)+1), cell_list)), f)
 
-    max_time = len(os.listdir(os.path.join(config['data_folder'], config['embryo_name'])))
+    max_time = len(os.listdir(os.path.join(config['seg_folder'], config['embryo_name'])))
     # max_time = config.get('max_time', 100)
     df_time = df_time[df_time.time <= max_time]
     all_cell_names = list(df_time.cell.unique())

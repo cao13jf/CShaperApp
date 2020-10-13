@@ -135,7 +135,9 @@ def test(config_file):
             os.makedirs(save_folder)  # If the target folder doesn't exist, create a new one
         test_time = []
         data_number = config_data.get('max_time', 100) * len(config_data["data_names"])
-        for i in tqdm(range(0, data_number), desc='Segmenting Data:'):
+        for i in tqdm(range(0, data_number), desc='Extracting binary membrane'):
+
+            # TODO: Process name: `Extracting binary membrane`;  current status: `i`; final status: `data_number`;
             [temp_imgs, img_names, emrbyo_name, temp_bbox, temp_size] = dataloader.get_image_data_with_name(i)
             temp_img_sagittal = transpose_volumes(temp_imgs, slice_direction)
             if (slice_direction == 'sagittal'):
@@ -168,7 +170,6 @@ def test(config_file):
 
             out_label = post_process_on_edt(pred).astype(np.int16)
 
-
             # ==============================================================
             #               save prediction results as *.nii.gz
             # ==============================================================
@@ -179,9 +180,6 @@ def test(config_file):
             save_file = os.path.join(save_folder,emrbyo_name, emrbyo_name + "_" + img_names.split(".")[0].split("_")[1] + "_segMemb.nii.gz")
             save_array_as_nifty_volume(final_label, save_file) # os.path.join(save_folder, one_embryo, one_embryo + "_" + tp_str.zfill(3) + "_cell.nii.gz")
 
-            print(save_file)
-        test_time = np.asarray(test_time)
-        print('test time', test_time.mean())
         sess.close()
 
         del sess, dataloader, net
