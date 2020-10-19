@@ -12,7 +12,7 @@ from Util.nucleus_lib import *
 from Util.parse_config import parse_config
 
 
-def post_process(config):
+def post_process(process, config):
 
     config_segdata = config['segdata']
     membseg_path = config_segdata['membseg_path']
@@ -35,7 +35,7 @@ def post_process(config):
     mpPool = mp.Pool(mp.cpu_count()-1)
     for idx, _ in enumerate(tqdm(mpPool.imap_unordered(run_post, parameters), total=len(parameters), desc="Segment binary membrane to cells")):
         # TODO: Process name: `Segment binary membrane to cells`;  current status: `idx`; final status: `len(parameters)`;
-        pass
+        process.emit('Segment binary membrane', idx, config_segdata['max_time'])
 
 #    mpPool = mp.Pool(3)
 #    for i in range(len(parameters)):

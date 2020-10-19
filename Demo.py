@@ -1,15 +1,21 @@
 
 from CShaper import Ui_MainWindow
-from PyQt5.QtWidgets import (QApplication, QGridLayout, QGroupBox, QDialog,
-                             QLabel, QSlider, QVBoxLayout, QMainWindow,
-                             QMessageBox)
+from PyQt5.QtWidgets import (QApplication, QGridLayout, QGroupBox, QDialog, QTableView,
+                             QLabel, QSlider, QVBoxLayout, QMainWindow, QLineEdit,
+                             QMessageBox, QComboBox, QTableWidgetItem, QAbstractItemView)
 from PyQt5 import QtWidgets
+from PyQt5.QtGui import QStandardItemModel,QStandardItem
 from FuncThread import PreprocessThread, SegmentationThread, AnalysisThread
 import warnings
 from multiprocessing import freeze_support
 import re
 import sys
+import time
 from ShapeUtil.data_structure import *
+import subprocess
+import pandas as pd
+import numpy as np
+
 warnings.filterwarnings("ignore")
 
 
@@ -17,13 +23,20 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainForm, self).__init__()
         self.setupUi(self)
-
+        self.dirNameView = ''
         self.Function.currentChanged.connect(self.updateBlankInfo)
+        self.tabWidget.currentChanged.connect(self.updateDataTable)
+        self.t3 = self.tableView_3.frameGeometry()
+        self.t3.setY(self.t3.y() + 30)
+
+        # self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+
         # combine_slice.py
         self.Btn_rawFolder.clicked.connect(self.chooseRawFolder_Pre)
         self.Btn_projectFolder.clicked.connect(self.chooseProjectFolder_Pre)
         self.Btn_lineageFile.clicked.connect(self.chooseLineageFile_Pre)
         self.Btn_runPreprocess.clicked.connect(self.runPreprocess)
+        self.actionRun_Preprocess.triggered.connect(self.runPreprocess)
         self.Btn_numberDict.clicked.connect(self.chooseNumberDict)
         self.Btn_stopPreprocess.clicked.connect(self.stopPreprocess)
 
@@ -42,10 +55,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.Btn_projectFolder_Seg.clicked.connect(self.chooseProjectFolder_Seg)
         self.Btn_modelFile_Seg.clicked.connect(self.chooseModelFile_Seg)
         self.Btn_runSegmentation.clicked.connect(self.runSegmentation)
+        self.actionRun_Segmentation.triggered.connect(self.runSegmentation)
         self.Btn_stopSegmentation.clicked.connect(self.stopSegmentation)
 
         # shape_analysis.py
         self.Btn_runAnalysis.clicked.connect(self.runAnalysis)
+        self.actionRun_Analysis.triggered.connect(self.runAnalysis)
         self.Btn_numberDict_Ana.clicked.connect(self.chooseNumberDict_Ana)
         self.Btn_rawFolder_Ana.clicked.connect(self.chooseRawFolder_Ana)
         self.Btn_projectFolder_Ana.clicked.connect(self.chooseProjectFolder_Ana)
@@ -54,8 +69,33 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
         # run all
         self.Btn_runAll.clicked.connect(self.runAll)
+        self.actionRun_ALL.triggered.connect(self.runAll)
+
+        #action File
+        self.actionNew_Project.triggered.connect(self.newProjoect)
+        self.actionSave_Project.triggered.connect(self.saveProject)
+        self.actionLoad_Project.triggered.connect(self.loadProject)
+
+        self.actionOpen_Result_Folder.triggered.connect(self.openResultFolder)
+        # PyQt5.QtWidgets.QUndoCommand
+        #action Edit
+        self.actionUndo.triggered.connect(self.undoEdit)
+        self.actionRedo.triggered.connect(self.redoEdit)
+        self.actionCopy.triggered.connect(self.copyEdit)
+        self.actionPaste.triggered.connect(self.pasteEdit)
+
+        #action About
+        self.actionCopy_Right.triggered.connect(self.copyRight)
+        self.actionHelp.triggered.connect(self.helpAbout)
+        self.actionVersion.triggered.connect(self.versionAbout)
 
     def updateBlankInfo(self):
+        if self.Function.currentIndex() == 0:
+            if self.LE_rawFolder.text() != '':
+                self.CB_embryoNames.clear()
+                listdir = os.listdir(self.LE_rawFolder.text())
+                listdir.sort()
+                self.CB_embryoNames.addItems(listdir)
         if self.Function.currentIndex() == 1:
             if self.LE_projectFolder.text() != '':
                 self.LE_projectFolder_Seg.setText(self.LE_projectFolder.text())
@@ -93,7 +133,70 @@ class MainForm(QMainWindow, Ui_MainWindow):
             if self.LE_lineage.text() != '':
                 self.LE_lineage_Ana.setText(self.LE_lineage.text())
         # print( self.Function.currentIndex())
+        if self.Function.currentIndex() == 3:
+            if self.dirNameView != '':
+                try:
+                    r = os.listdir(self.dirNameView)
+                    for i in r:
+                        if i.endswith('surface.csv'):
+                            file = self.dirNameView + '/' + i
+                    # file = '/Users/admin/cuhk/CShaperAPP/TestProject/StatShape/181210plc1p1/181210plc1p1_surface.csv'
+                    self.showDataTable(file)
+                except Exception:
+                    QMessageBox.warning(self, 'Error!', 'Folder Error!')
+            else:
+                try:
+                    self.dirNameView = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Project Folder', './')
+                    r = os.listdir(self.dirNameView)
+                    for i in r:
+                        if i.endswith('surface.csv'):
+                            folder = self.dirNameView + '/' + i
+                    self.showDataTable(folder)
+                except Exception:
+                    QMessageBox.warning(self, 'Error!', 'Folder Error!')
 
+    def showDataTable(self, filename):
+        input_table = pd.read_csv(filename)
+        input_table_rows = input_table.shape[0]
+        input_table_colunms = input_table.shape[1]
+
+        data = input_table.values.tolist()
+
+        self.tableView_3.close()
+        self.tableView_3 = QTableView(self.tabWidget)
+        self.tableView_3.setGeometry(self.t3)
+        self.Model = QStandardItemModel()
+        self.Model.setHorizontalHeaderLabels(input_table)
+        for i in range(input_table_rows):
+            for j in range(input_table_colunms):
+                self.Model.setItem(i, j, QStandardItem(str(data[i][j])))
+
+        self.tableView_3.setModel(self.Model)
+        self.tableView_3.updateEditorData()
+        self.tableView_3.show()
+
+
+    def updateDataTable(self):
+        filename = ''
+        try:
+            r = os.listdir(self.dirNameView)
+            if self.tabWidget.currentIndex() == 0:
+                for i in r:
+                    if i.endswith('surface.csv'):
+                        filename = self.dirNameView + '/' + i
+                self.showDataTable(filename)
+            elif self.tabWidget.currentIndex() == 1:
+                for i in r:
+                    if i.endswith('volume.csv'):
+                        filename = self.dirNameView + '/' + i
+                self.showDataTable(filename)
+            elif self.tabWidget.currentIndex() == 2:
+                for i in r:
+                    if i.endswith('contact.csv'):
+                        filename = self.dirNameView + '/' + i
+                self.showDataTable(filename)
+        except Exception:
+            pass
 
     def runAll(self):
         self.runPreprocess()
@@ -155,6 +258,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.call = False
         self.pthread = PreprocessThread(config)
         self.pthread.signal.connect(self.ThreadCallback)
+        self.pthread.process.connect(self.ProcessCallback)
         self.pthread.start()
 
     def stopPreprocess(self):
@@ -166,11 +270,22 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def ThreadCallback(self, call, func):
 
-        if call:
+        if call == True:
+            if func == 'Preprocess':
+                self.PreprogressBar.setValue(100)
+            elif func == 'Segmentation':
+                self.SegmentationBar.setValue(100)
+            elif func == 'Analysis':
+                self.AnalysisBar.setValue(100)
             QMessageBox.information(self, func, func+' success!')
-        else:
+        elif call == False:
             QMessageBox.warning(self, 'Error!', func+' failed!')
-        # print(call)
+        else:
+            pass
+
+    def ProcessCallback(self, func, current, max_time):
+        self.label_Preprocess.setText(func+':')
+        self.PreprogressBar.setValue((current) * 100 / (max_time * 3))
 
     def chooseProjectFolder_Seg(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Stack Folder', './')
@@ -264,7 +379,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.call = False
         self.sthread = SegmentationThread(config)
         self.sthread.signal.connect(self.ThreadCallback)
+        self.sthread.process.connect(self.SegmentationCallback)
         self.sthread.start()
+
+    def SegmentationCallback(self, func, current, max_time):
+        self.label_Segmentation.setText(func+':')
+        self.SegmentationBar.setValue((current) * 100 / (max_time * 2))
 
     def stopSegmentation(self):
         try:
@@ -321,12 +441,18 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config['para']['first_run'] = False
             config['para']["number_dictionary"] = self.LE_numberDict_Ana.text()
             config['para']["lineage_file"] = self.LE_lineage_Ana.text()
+            self.dirNameView = self.LE_projectFolder_Ana.text() + '/StateShape/' + self.CB_embryoNames_Ana.currentText()
         except Exception:
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
         self.call = False
         self.athread = AnalysisThread(config)
         self.athread.signal.connect(self.ThreadCallback)
+        self.athread.process.connect(self.AnalysisCallback)
         self.athread.start()
+
+    def AnalysisCallback(self, func, current, max_time):
+        self.label_Analysis.setText(func+':')
+        self.AnalysisBar.setValue((current) * 100 / (max_time))
 
     def stopAnalysis(self):
         try:
@@ -334,6 +460,70 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.information(self, 'Tips', 'Analysis has been terminated.')
         except Exception:
             QMessageBox.warning(self, 'Warning!', 'Analysis has not been started.')
+
+    def newProjoect(self):
+        for i in self.findChildren(QLineEdit):
+            i.setText('')
+
+        for i in self.findChildren(QComboBox):
+            i.clear()
+
+    def saveProject(self):
+        dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Save Folder', './')
+        try:
+            # save all the paras
+            with open(dirName+'/test.project', 'w', encoding='utf8', newline='') as fout:
+
+                for i in self.findChildren(QLineEdit):
+                    fout.write(i.objectName() + ':' + i.text() + '\n')
+                for i in self.findChildren(QComboBox):
+                    fout.write(i.objectName() + ':' + i.currentText() + '\n')
+        except Exception as e:
+            QMessageBox.warning(self, 'Warning!', 'Project Save Failed!')
+
+    def loadProject(self):
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Project File', './', "Project File(*.project)")
+
+        try:
+            with open(fileName, 'r', encoding='utf8') as fr:
+                r = fr.readlines()
+                for i in r:
+                    temp = i.split(':')
+                    temp[1] = temp[1].strip('\n')
+                    if self.findChild(QLineEdit,temp[0]) is not None:
+                        self.findChild(QLineEdit, temp[0]).setText(temp[1])
+                    elif self.findChild(QComboBox, temp[0]) is not None:
+                        self.findChild(QComboBox, temp[0]).setCurrentText(temp[1])
+        except Exception:
+            QMessageBox.warning(self, 'Warning!', 'Project Load Failed!')
+
+    def undoEdit(self):
+        self.focusWidget().undo()
+
+    def redoEdit(self):
+        self.focusWidget().redo()
+
+    def copyEdit(self):
+        self.focusWidget().copy()
+
+    def pasteEdit(self):
+        self.focusWidget().paste()
+
+    def openResultFolder(self):
+        try:
+            if self.LE_projectFolder.text() != '':
+                subprocess.call(['open',self.LE_projectFolder.text()])
+        except Exception:
+            QMessageBox.warning(self, 'Warning!', 'Open Result Folder Failed!')
+
+    def versionAbout(self):
+        QMessageBox.information(self, 'Version', 'The version of software is 1.0.0 alpha.')
+
+    def helpAbout(self):
+        QMessageBox.information(self, 'Help', 'This software is about ... our github is https://.....')
+
+    def copyRight(self):
+        QMessageBox.information(self, 'Copy Right', 'Here is the copy right information of our software.')
 
 
 if __name__ == '__main__':

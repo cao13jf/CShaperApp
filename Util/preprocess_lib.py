@@ -16,12 +16,13 @@ from skimage.transform import resize
 # import user defined library
 from Util.parse_config import parse_config
 
-def combine_slices(config):
+def combine_slices(process, config):
     """
     Combine slices into stack images
     :param config: parameters
     :return:
     """
+    # signal.emit(True,'sss')
     num_slice = config["num_slice"]
     embryo_names = config["embryo_names"]
     max_time = config["max_time"]
@@ -40,7 +41,7 @@ def combine_slices(config):
     out_res = [res * x / y for res, x, y in zip([xy_res, xy_res, xy_res], raw_size, out_size)]
 
     # multiprocessing
-    mpPool = mp.Pool(mp.cpu_count()-1)
+    mpPool = mp.Pool(mp.cpu_count() - 1)
 
     for embryo_name in embryo_names:
         # save nucleus
@@ -52,9 +53,12 @@ def combine_slices(config):
         configs = []
         for tp in range(1, max_time + 1):
             configs.append((origin_folder, target_folder, embryo_name, tp, out_size, num_slice, out_res))
-        for idx, _ in enumerate(tqdm(mpPool.imap_unordered(stack_nuc_slices, configs), total=len(configs), desc="1/3 Stack nucleus of {}".format(embryo_name))):
+
+        for idx, _ in enumerate(tqdm(mpPool.imap_unordered(stack_nuc_slices, configs), total=len(configs),
+                                     desc="1/3 Stack nucleus of {}".format(embryo_name))):
             # TODO: Process Name: `1/3 Stack nucleus`; Current status: `idx`; Final status: max_time
-            pass
+            process.emit('Stack nucleus', idx, max_time)
+            # pass
             # stack_nuc_slices(raw_folder=origin_folder, save_folder=target_folder, embryo_name=embryo_name, tp=tp,
             #                  out_size=out_size, num_slice=num_slice, res=out_res)
 
@@ -67,9 +71,10 @@ def combine_slices(config):
         configs = []
         for tp in range(1, max_time + 1):
             configs.append((origin_folder, target_folder, embryo_name, tp, out_size, num_slice, out_res))
-        for idx, _ in enumerate(tqdm(mpPool.imap_unordered(stack_memb_slices, configs), total=len(configs), desc="2/3 Stack membrane of {}".format(embryo_name))):
+        for idx, _ in enumerate(tqdm(mpPool.imap_unordered(stack_memb_slices, configs), total=len(configs),
+                                     desc="2/3 Stack membrane of {}".format(embryo_name))):
             # TODO: Process Name: `2/3 Stack membrane`; Current status: `idx`; Final status: max_time
-            pass
+            process.emit('Stack membrane', idx+max_time, max_time)
         # for tp in range(1, max_time+1):
         #     stack_memb_slices(raw_folder=origin_folder, save_folder=target_folder, embryo_name=embryo_name, tp=tp,
         #                     out_size=out_size, num_slice=num_slice, res=out_res)
@@ -98,11 +103,12 @@ def combine_slices(config):
 
             configs = []
             for tp in range(1, max_time + 1):
-                configs.append((embryo_name, number_dict, pd_lineage, tp, raw_size, out_size, out_res, xy_res/z_res, target_folder))
+                configs.append((embryo_name, number_dict, pd_lineage, tp, raw_size, out_size, out_res,
+                                xy_res / z_res, target_folder))
             for idx, _ in enumerate(tqdm(mpPool.imap_unordered(save_nuc_seg, configs), total=len(configs),
-                          desc="3/3 Construct nucleus location of {}".format(embryo_name))):
+                                         desc="3/3 Construct nucleus location of {}".format(embryo_name))):
                 # TODO: Process Name: `3/3 Construct nucleus location`; Current status: `idx`; Final status: max_time
-                pass
+                process.emit('Construct nucleus location', idx+max_time*2, max_time)
             # for tp in range(1, max_time+1):
             #     save_nuc_seg(embryo_name=embryo_name,
             #                  name_dict=name_dict,
@@ -123,7 +129,7 @@ def stack_nuc_slices(para):
 
     out_stack = []
     save_file_name = "{}_{}_rawNuc.nii.gz".format(embryo_name, str(tp).zfill(3))
-    for i_slice in range(1, num_slice+1):
+    for i_slice in range(1, num_slice + 1):
         raw_file_name = "{}_L1-t{}-p{}.tif".format(embryo_name, str(tp).zfill(3), str(i_slice).zfill(2))
 
         img = np.asanyarray(Image.open(os.path.join(raw_folder, raw_file_name)))
@@ -134,7 +140,6 @@ def stack_nuc_slices(para):
     nib_stack.header.set_xyzt_units(xyz=3, t=8)
     nib_stack.header["pixdim"] = [1.0, res[0], res[1], res[2], 0., 0., 0., 0.]
     nib.save(nib_stack, os.path.join(save_folder, save_file_name))
-
 
 # ============================================
 # save raw membrane stack
@@ -144,7 +149,7 @@ def stack_memb_slices(para):
 
     out_stack = []
     save_file_name = "{}_{}_rawMemb.nii.gz".format(embryo_name, str(tp).zfill(3))
-    for i_slice in range(1, num_slice+1):
+    for i_slice in range(1, num_slice + 1):
         raw_file_name = "{}_L1-t{}-p{}.tif".format(embryo_name, str(tp).zfill(3), str(i_slice).zfill(2))
 
         img = np.asanyarray(Image.open(os.path.join(raw_folder, raw_file_name)))
@@ -155,7 +160,6 @@ def stack_memb_slices(para):
     nib_stack.header.set_xyzt_units(xyz=3, t=8)
     nib_stack.header["pixdim"] = [1.0, res[0], res[1], res[2], 0., 0., 0., 0.]
     nib.save(nib_stack, os.path.join(save_folder, save_file_name))
-
 
 # =============================================
 # save nucleus segmentation
@@ -170,7 +174,8 @@ def save_nuc_seg(para):
     tp_lineage.loc[:, "z"] = (out_size[2] - np.floor(tp_lineage["z"] * (zoom_ratio[2] / dif_res))).astype(np.int16)
 
     # !!!! x <--> y
-    nuc_dict = dict(zip(tp_lineage["cell"], zip(tp_lineage["y"].values, tp_lineage["x"].values, tp_lineage["z"].values)))
+    nuc_dict = dict(
+        zip(tp_lineage["cell"], zip(tp_lineage["y"].values, tp_lineage["x"].values, tp_lineage["z"].values)))
     labels = [name_dict[name] for name in list(nuc_dict.keys())]
     locs = list(nuc_dict.values())
     out_seg = np.zeros(out_size, dtype=np.uint16)

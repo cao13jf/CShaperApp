@@ -13,57 +13,7 @@ from train import NetFactory
 import gc
 
 
-def test(config_file):
-
-    #=============================================================
-    #               1, Load configuration parameters
-    #=============================================================
-    config = parse_config(config_file)
-    print(config)
-    # # fix some parameters for off-the-shelf testing file
-    config["data"] = {}
-
-    config["data"]["data_root"] = os.path.join(config["para"]["project_folder"], "RawStack")
-    config["data"]["data_names"] = config["para"]["embryo_names"]
-    config["data"]["max_time"] = config["para"]["max_time"]
-    config["data"]["save_folder"] = os.path.join(config["para"]["project_folder"], "CellMembrane")
-
-    config["data"]["with_ground_truth"] = False
-    config["data"]["label_edt_transform"] = True
-    config["data"]["valid_edt_width"] = 30
-    config["data"]["label_edt_discrete"] = True
-    config["data"]["edt_discrete_num"] = 16
-
-    config["network"] = {}
-    config["network"]["net_type"] = "CShaper"
-    config["network"]["net_name"] = "DMapNet_PUB"
-    config["network"]["data_shape"] = [24, 128, 96, 1]
-    config["network"]["label_shape"] = [16, 128, 96, 1]
-    config["network"]["model_file"] = config["para"]["model_file"]
-
-    config["testing"] = {}
-    config["testing"]["batch_size"] = config["para"]["batch_size"]
-    config["testing"]["nucleus_as_seed"] = config["para"]["nucleus_as_seed"]
-    config["testing"]["nucleus_filter"] = config["para"]["nucleus_filter"]
-
-    config["testing"]["save_binary_seg"] = True
-    config["testing"]["save_predicted_map"] = False
-    config["testing"]["slice_direction"] = "sagittal"
-    config["testing"]["direction_fusion"] = True
-    config["testing"]["only_post_process"] = False
-    config["testing"]["post_process"] = True
-
-    config["segdata"] = {}
-    config["segdata"]["membseg_path"] = config["data"]["save_folder"]
-    config["segdata"]["nucleus_data_root"] = config["data"]["data_root"]
-
-    config["debug"] = {}
-    config["debug"]["debug_mode"] = False
-    config["debug"]["save_anisotropic"] = False
-    config["debug"]["save_graph_model"] = False
-    config["debug"]["save_init_watershed"] = False
-    config["debug"]["save_merged_seg"] = False
-    config["debug"]["save_cell_nomemb"] = False
+def test(process, config):
 
     # group parameters
     config_data = config['data']
@@ -77,7 +27,6 @@ def test(config_file):
         data_shape = config_net['data_shape']
         label_shape = config_net['label_shape']
         class_num = config_data.get('edt_discrete_num', 16)
-
 
         # ==============================================================
         #               2, Construct computation graph
@@ -136,7 +85,7 @@ def test(config_file):
         test_time = []
         data_number = config_data.get('max_time', 100) * len(config_data["data_names"])
         for i in tqdm(range(0, data_number), desc='Extracting binary membrane'):
-
+            process.emit('Extracting binary membrane', i, data_number)
             # TODO: Process name: `Extracting binary membrane`;  current status: `i`; final status: `data_number`;
             [temp_imgs, img_names, emrbyo_name, temp_bbox, temp_size] = dataloader.get_image_data_with_name(i)
             temp_img_sagittal = transpose_volumes(temp_imgs, slice_direction)
@@ -205,7 +154,7 @@ def test(config_file):
         if not os.path.isdir(config_post['result']['postseg_folder']):
             os.makedirs(config_post['result']['postseg_folder'])
 
-        post_process(config_post)
+        post_process(process, config_post)
 
 
 if __name__ == '__main__':

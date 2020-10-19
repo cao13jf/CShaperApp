@@ -30,7 +30,7 @@ def init(l):  # used for parallel computing
     file_lock = l
 
 
-def run_shape_analysis(config):
+def run_shape_analysis(process, config):
     '''
     Extract the cell tree structure from the aceTree file
     :param acetree_file:  file name of the embryo acetree file
@@ -68,7 +68,7 @@ def run_shape_analysis(config):
     embryo_name = config["embryo_names"][0]
     for idx, _ in enumerate(tqdm(mpPool.imap_unordered(cell_graph_network, configs), total=len(configs), desc="Naming {} segmentations".format(embryo_name))):
         # TODO: Process name: `Naming segmentations`; Current state: idx; Final state: `max_time`
-        pass
+        process.emit('Naming segmentation', idx, max_time)
 
 
     # ========================================================
