@@ -10,12 +10,17 @@ Data/
 run_shape_analysis.sh
 run_test_edt.sh
 tem.py
+tem.sh
+run_train_edt.sh
+run_test_edt.sh
+
 
 Tem
 
 ModelCell/
 ResultCell/
 ShapeUtil/RobustStat/
+ConfigMemb/ShapeConfigs
 ShapeUtil/TemCellGraph
 TestProject
 Resource

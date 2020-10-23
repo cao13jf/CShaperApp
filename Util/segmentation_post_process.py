@@ -34,7 +34,7 @@ def post_process(process, config):
 
     mpPool = mp.Pool(mp.cpu_count()-1)
     for idx, _ in enumerate(tqdm(mpPool.imap_unordered(run_post, parameters), total=len(parameters), desc="Segment binary membrane to cells")):
-        # TODO: Process name: `Segment binary membrane to cells`;  current status: `idx`; final status: `len(parameters)`;
+        # TODO: 2 / 2 Process name: `Segment binary membrane to cells`;  current status: `idx`; final status: `len(parameters)`;
         process.emit('Segment binary membrane', idx, config_segdata['max_time'])
 
 #    mpPool = mp.Pool(3)

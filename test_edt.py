@@ -86,7 +86,7 @@ def test(process, config):
         data_number = config_data.get('max_time', 100) * len(config_data["data_names"])
         for i in tqdm(range(0, data_number), desc='Extracting binary membrane'):
             process.emit('Extracting binary membrane', i, data_number)
-            # TODO: Process name: `Extracting binary membrane`;  current status: `i`; final status: `data_number`;
+            # TODO: 1 / 2 Process name: `Extracting binary membrane`;  current status: `i`; final status: `data_number`;
             [temp_imgs, img_names, emrbyo_name, temp_bbox, temp_size] = dataloader.get_image_data_with_name(i)
             temp_img_sagittal = transpose_volumes(temp_imgs, slice_direction)
             if (slice_direction == 'sagittal'):
