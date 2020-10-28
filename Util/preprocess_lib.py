@@ -57,7 +57,7 @@ def combine_slices(process, config):
         for idx, _ in enumerate(tqdm(mpPool.imap_unordered(stack_nuc_slices, configs), total=len(configs),
                                      desc="1/3 Stack nucleus of {}".format(embryo_name))):
             # TODO: Process Name: `1/3 Stack nucleus`; Current status: `idx`; Final status: max_time
-            process.emit('Stack nucleus', idx, max_time)
+            process.emit('1/3 Stack nucleus', idx, max_time)
             # pass
             # stack_nuc_slices(raw_folder=origin_folder, save_folder=target_folder, embryo_name=embryo_name, tp=tp,
             #                  out_size=out_size, num_slice=num_slice, res=out_res)
@@ -74,7 +74,7 @@ def combine_slices(process, config):
         for idx, _ in enumerate(tqdm(mpPool.imap_unordered(stack_memb_slices, configs), total=len(configs),
                                      desc="2/3 Stack membrane of {}".format(embryo_name))):
             # TODO: Process Name: `2/3 Stack membrane`; Current status: `idx`; Final status: max_time
-            process.emit('Stack membrane', idx+max_time, max_time)
+            process.emit('2/3 Stack membrane', idx, max_time)
         # for tp in range(1, max_time+1):
         #     stack_memb_slices(raw_folder=origin_folder, save_folder=target_folder, embryo_name=embryo_name, tp=tp,
         #                     out_size=out_size, num_slice=num_slice, res=out_res)
@@ -108,7 +108,7 @@ def combine_slices(process, config):
             for idx, _ in enumerate(tqdm(mpPool.imap_unordered(save_nuc_seg, configs), total=len(configs),
                                          desc="3/3 Construct nucleus location of {}".format(embryo_name))):
                 # TODO: Process Name: `3/3 Construct nucleus location`; Current status: `idx`; Final status: max_time
-                process.emit('Construct nucleus location', idx+max_time*2, max_time)
+                process.emit('3/3 Construct nucleus location', idx, max_time)
             # for tp in range(1, max_time+1):
             #     save_nuc_seg(embryo_name=embryo_name,
             #                  name_dict=name_dict,

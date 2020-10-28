@@ -68,7 +68,7 @@ def run_shape_analysis(process, config):
     embryo_name = config["embryo_names"][0]
     for idx, _ in enumerate(tqdm(mpPool.imap_unordered(cell_graph_network, configs), total=len(configs), desc="Naming {} segmentations".format(embryo_name))):
         # TODO: 1 / 3 Process name: `Naming segmentations`; Current state: idx; Final state: `max_time`
-        process.emit('Naming segmentation', idx, max_time)
+        process.emit('1/3 Naming segmentation', idx, max_time)
 
 
     # ========================================================
@@ -80,6 +80,7 @@ def run_shape_analysis(process, config):
     construct_stat_embryo(cell_tree, max_time)  # initilize the shape matrix which is use to store the shape series information
     for itime in tqdm(range(1, max_time+1), desc='assembling {} result'.format(embryo_name)):
         # TODO: 2 / 3 Process name: `Assembling results`; Current state: itime; Final state: `max_time`
+        process.emit('2/3 Assembling results', itime, max_time)
         file_name = os.path.join(config["project_folder"], 'TemCellGraph', config['embryo_name'], config['embryo_name']+'_T'+str(itime)+'.txt')
         with open(file_name, 'rb') as f:
             cell_graph = pickle.load(f)
@@ -95,6 +96,7 @@ def run_shape_analysis(process, config):
     surface_lists = []
     for t in tqdm(range(1, max_time + 1), desc="Generate surface and volume {}".format(embryo_name.split('/')[-1])):
         # TODO: 3 / 3 Process name: `Generating surface and volume`; Current state: t; Final state: `max_time`
+        process.emit('3/3 Generating surface and volume', t, max_time)
         nucleus_loc_file = os.path.join(config["save_nucleus_folder"], embryo_name, os.path.basename(embryo_name)+"_"+str(t).zfill(3)+"_nucLoc"+".csv")
         pd_loc = pd.read_csv(nucleus_loc_file)
         cell_volume_surface = pd_loc[["nucleus_name", "volume", "surface"]]

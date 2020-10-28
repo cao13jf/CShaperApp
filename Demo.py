@@ -5,7 +5,14 @@ from PyQt5.QtWidgets import (QApplication, QGridLayout, QGroupBox, QDialog, QTab
                              QMessageBox, QComboBox, QTableWidgetItem, QAbstractItemView)
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QStandardItemModel,QStandardItem
-from FuncThread import PreprocessThread, SegmentationThread, AnalysisThread
+import PyQt5.QtCore
+from FuncThread import PreprocessThread, SegmentationThread, AnalysisThread, RunAllThread
+from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
+from reconstruction import *
+import SimpleITK as sitk
+from random import random
+
 import warnings
 from multiprocessing import freeze_support
 import re
@@ -17,6 +24,8 @@ import pandas as pd
 import numpy as np
 
 warnings.filterwarnings("ignore")
+MASK_OPACITY = 1
+MASK_SMOOTHNESS = 500
 
 
 class MainForm(QMainWindow, Ui_MainWindow):
@@ -29,7 +38,24 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.t3 = self.tableView_3.frameGeometry()
         self.t3.setY(self.t3.y() + 30)
 
-        # self.tableWidget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        # 3d reconstruction
+        self.reconstructView = ''
+        self.embryo = ''
+        self.main_widget = QtWidgets.QWidget(self)
+        self.vtkWidget = QVTKRenderWindowInteractor(self.main_widget)
+        self.gridLayout.addWidget(self.vtkWidget)
+        self.render_window = self.vtkWidget.GetRenderWindow()
+        self.renderer = vtk.vtkRenderer()
+        self.renderer.SetBackground(1, 1, 1)
+        self.render_window.AddRenderer(self.renderer)
+        self.render_window.Render()
+        self.iren = self.render_window.GetInteractor()
+
+        self.x = 0
+        self.maxNum = 1
+        self.Label_idx.setWordWrap(True)
+        self.Label_idx.setAlignment(PyQt5.QtCore.Qt.AlignTop)
+        self.Slider_3d.valueChanged.connect(self.set3DImage)
 
         # combine_slice.py
         self.Btn_rawFolder.clicked.connect(self.chooseRawFolder_Pre)
@@ -39,17 +65,6 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.actionRun_Preprocess.triggered.connect(self.runPreprocess)
         self.Btn_numberDict.clicked.connect(self.chooseNumberDict)
         self.Btn_stopPreprocess.clicked.connect(self.stopPreprocess)
-
-        # self.LE_rawFolder.setText('/Users/admin/cuhk/CShaperAPP/Data/MembRaw')
-        # self.CB_embryoNames.setCurrentText('181210plc1p1')
-        # self.LE_xyResolution.setText('0.09')
-        # self.LE_zResolution.setText('0.42')
-        # self.LE_reduceRatio.setText('0.3')
-        # self.LE_sliceNum.setText('68')
-        # self.LE_maxTime.setText('5')
-        # self.LE_projectFolder.setText('/Users/admin/cuhk/CShaperAPP/TestProject')
-        # self.LE_lineage.setText('/Users/admin/cuhk/CShaperAPP/Data/MembRaw/181210plc1p1/aceNuc/CD181210plc1p1.csv')
-        # self.LE_numberDict.setText('/Users/admin/cuhk/CShaperAPP/Resource/number_dictionary.csv')
 
         # test_edt.py
         self.Btn_projectFolder_Seg.clicked.connect(self.chooseProjectFolder_Seg)
@@ -132,7 +147,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 self.LE_projectFolder_Ana.setText(self.LE_projectFolder.text())
             if self.LE_lineage.text() != '':
                 self.LE_lineage_Ana.setText(self.LE_lineage.text())
-        # print( self.Function.currentIndex())
+            if self.LE_numberDict.text() != '':
+                self.LE_numberDict_Ana.setText(self.LE_numberDict.text())
         if self.Function.currentIndex() == 3:
             if self.dirNameView != '':
                 try:
@@ -140,41 +156,79 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     for i in r:
                         if i.endswith('surface.csv'):
                             file = self.dirNameView + '/' + i
-                    # file = '/Users/admin/cuhk/CShaperAPP/TestProject/StatShape/181210plc1p1/181210plc1p1_surface.csv'
-                    self.showDataTable(file)
-                except Exception:
-                    QMessageBox.warning(self, 'Error!', 'Folder Error!')
-            else:
-                try:
-                    self.dirNameView = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Project Folder', './')
-                    r = os.listdir(self.dirNameView)
-                    for i in r:
-                        if i.endswith('surface.csv'):
-                            folder = self.dirNameView + '/' + i
-                    self.showDataTable(folder)
+                    self.showDataTable(file,self.tableView_3)
                 except Exception:
                     QMessageBox.warning(self, 'Error!', 'Folder Error!')
 
-    def showDataTable(self, filename):
+    def showDataTable(self, filename, tableView):
         input_table = pd.read_csv(filename)
         input_table_rows = input_table.shape[0]
         input_table_colunms = input_table.shape[1]
 
         data = input_table.values.tolist()
-
-        self.tableView_3.close()
-        self.tableView_3 = QTableView(self.tabWidget)
-        self.tableView_3.setGeometry(self.t3)
         self.Model = QStandardItemModel()
         self.Model.setHorizontalHeaderLabels(input_table)
         for i in range(input_table_rows):
             for j in range(input_table_colunms):
                 self.Model.setItem(i, j, QStandardItem(str(data[i][j])))
 
-        self.tableView_3.setModel(self.Model)
-        self.tableView_3.updateEditorData()
-        self.tableView_3.show()
+        tableView.setModel(self.Model)
+        tableView.updateEditorData()
+        tableView.show()
 
+    def construct3D(self, file):
+        self.renderer = vtk.vtkRenderer()
+        self.renderer.SetBackground(1, 1, 1)
+        mask = NiiObject()
+        mask.reader = vtk.vtkNIFTIImageReader()
+        mask.reader.SetFileName(file)
+        mask.reader.Update()
+        mask.extent = mask.reader.GetDataExtent()
+        n_labels = int(mask.reader.GetOutput().GetScalarRange()[1])
+        image = sitk.ReadImage(file)
+        image = sitk.GetArrayFromImage(image)
+        ccc = {}
+        for i in image:
+            for j in i:
+                for k in j:
+                    if k in ccc.keys():
+                        ccc[k] += 1
+                    else:
+                        ccc[k] = 1
+        MASK_COLORS = []
+        for i in range(n_labels):
+            temp = (random(), random(), random())
+            MASK_COLORS.append(temp)
+        count = 0
+        for label_idx in range(n_labels + 1):
+            if label_idx in ccc.keys():
+                if label_idx > 0:
+                    mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
+                    mask.labels[count].extractor = create_mask_extractor(mask)
+                    add_surface_rendering(mask, count, label_idx)
+                    self.renderer.AddActor(mask.labels[count].actor)
+                    count += 1
+                mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
+                mask.labels[count].extractor = create_mask_extractor(mask)
+                add_surface_rendering(mask, count, label_idx + 1)
+                self.renderer.AddActor(mask.labels[count].actor)
+                count += 1
+                if label_idx < n_labels:
+                    mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
+                    mask.labels[count].extractor = create_mask_extractor(mask)
+                    add_surface_rendering(mask, count, label_idx + 2)
+                    self.renderer.AddActor(mask.labels[count].actor)
+                    count += 1
+        self.renderer.ResetCamera()
+        self.render_window.AddRenderer(self.renderer)
+        self.render_window.Render()
+        self.iren = self.render_window.GetInteractor()
+
+    def set3DImage(self, x):
+        self.x = x
+        self.Label_idx.setText('{}/{}'.format('%03d' % self.x, '%03d' % self.maxNum))
+        file = self.reconstructView + self.embryo + '_' + str('%03d'%self.x) + '_SegCell.nii.gz'
+        self.construct3D(file)
 
     def updateDataTable(self):
         filename = ''
@@ -184,24 +238,125 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 for i in r:
                     if i.endswith('surface.csv'):
                         filename = self.dirNameView + '/' + i
-                self.showDataTable(filename)
+                self.showDataTable(filename, self.tableView_3)
             elif self.tabWidget.currentIndex() == 1:
                 for i in r:
                     if i.endswith('volume.csv'):
                         filename = self.dirNameView + '/' + i
-                self.showDataTable(filename)
+                self.showDataTable(filename, self.tableView_2)
             elif self.tabWidget.currentIndex() == 2:
                 for i in r:
                     if i.endswith('contact.csv'):
                         filename = self.dirNameView + '/' + i
-                self.showDataTable(filename)
+                self.showDataTable(filename, self.tableView)
+            elif self.tabWidget.currentIndex() == 3:
+                first = self.reconstructView + self.embryo + '_' + '001' + '_SegCell.nii.gz'
+                r = os.listdir(self.reconstructView)
+                self.maxNum = len(r)
+                self.Slider_3d.setMaximum(self.maxNum)
+                self.Label_idx.setText('{}/{}'.format('%03d' % 1, '%03d' % self.maxNum))
+                self.construct3D(first)
+
         except Exception:
             pass
 
     def runAll(self):
-        self.runPreprocess()
-        self.runSegmentation()
-        self.runAnalysis()
+        config = {}
+        try:
+            #preprocess
+            config['num_slice'] = int(self.LE_sliceNum.text())
+            en = []
+            en.append(self.CB_embryoNames.currentText())
+            config["embryo_names"] = en
+            config["max_time"] = int(self.LE_maxTime.text())
+            config["xy_resolution"] = float(self.LE_xyResolution.text())
+            config["z_resolution"] = float(self.LE_zResolution.text())
+            config["reduce_ratio"] = float(self.LE_reduceRatio.text())
+            config["raw_folder"] = self.LE_rawFolder.text()
+            config["project_folder"] = self.LE_projectFolder.text()
+            config["lineage_file"] = self.LE_lineage.text()
+            config["number_dictionary"] = self.LE_numberDict.text()
+
+            #segmentation
+            config['para'] = {}
+            config["para"]["project_folder"] = self.LE_projectFolder_Seg.text()
+            en = []
+            en.append(self.CB_embryoNames_Seg.currentText())
+            config["para"]["embryo_names"] = en
+            config["para"]["max_time"] = int(self.LE_maxTime_Seg.text())
+            # config["para"]["save_folder"] = self.LE_saveFolder_Seg.text()
+            config["para"]["batch_size"] = int(self.LE_batchSize_Seg.text())
+            lineage = self.CB_lineage_Seg.currentText()
+            if lineage == 'No lineage':
+                config["para"]["nucleus_as_seed"] = False
+                config["para"]["nucleus_filter"] = False
+            elif lineage == 'Before segmentation':
+                config["para"]["nucleus_as_seed"] = True
+                config["para"]["nucleus_filter"] = False
+            elif lineage == 'After segmentation':
+                config["para"]["nucleus_as_seed"] = False
+                config["para"]["nucleus_filter"] = True
+            config["data"] = {}
+            config["data"]["data_root"] = os.path.join(config["para"]["project_folder"], "RawStack")
+            config["data"]["data_names"] = config["para"]["embryo_names"]
+            config["data"]["max_time"] = config["para"]["max_time"]
+            config["data"]["save_folder"] = os.path.join(config["para"]["project_folder"], "CellMembrane")
+            config["data"]["with_ground_truth"] = False
+            config["data"]["label_edt_transform"] = True
+            config["data"]["valid_edt_width"] = 30
+            config["data"]["label_edt_discrete"] = True
+            config["data"]["edt_discrete_num"] = 16
+            config["network"] = {}
+            config["network"]["net_type"] = "CShaper"
+            config["network"]["net_name"] = "DMapNet_PUB"
+            config["network"]["data_shape"] = [24, 128, 96, 1]
+            config["network"]["label_shape"] = [16, 128, 96, 1]
+            config["network"]["model_file"] = self.LE_modelFile_Seg.text()
+            config["testing"] = {}
+            config["testing"]["batch_size"] = config["para"]["batch_size"]
+            config["testing"]["nucleus_as_seed"] = config["para"]["nucleus_as_seed"]
+            config["testing"]["nucleus_filter"] = config["para"]["nucleus_filter"]
+            config["testing"]["save_binary_seg"] = True
+            config["testing"]["save_predicted_map"] = False
+            config["testing"]["slice_direction"] = "sagittal"
+            config["testing"]["direction_fusion"] = True
+            config["testing"]["only_post_process"] = False
+            config["testing"]["post_process"] = True
+            config["segdata"] = {}
+            config["segdata"]["membseg_path"] = config["data"]["save_folder"]
+            config["segdata"]["nucleus_data_root"] = config["data"]["data_root"]
+            config["debug"] = {}
+            config["debug"]["debug_mode"] = False
+            config["debug"]["save_anisotropic"] = False
+            config["debug"]["save_graph_model"] = False
+            config["debug"]["save_init_watershed"] = False
+            config["debug"]["save_merged_seg"] = False
+            config["debug"]["save_cell_nomemb"] = False
+
+            #analysis
+            config['para2'] = {}
+            config['para2']['num_slice'] = int(self.LE_sliceNum_Ana.text())
+            config['para2']['xy_resolution'] = float(self.LE_xyResolution_Ana.text())
+            config['para2']['raw_folder'] = self.LE_rawFolder_Ana.text()
+            en = []
+            en.append(self.CB_embryoNames_Ana.currentText())
+            config["para2"]["embryo_names"] = en
+            config['para2']['project_folder'] = self.LE_projectFolder_Ana.text()
+            config['para2']['first_run'] = False
+            config['para2']["number_dictionary"] = self.LE_numberDict_Ana.text()
+            config['para2']["lineage_file"] = self.LE_lineage_Ana.text()
+            self.dirNameView = self.LE_projectFolder_Ana.text() + '/StatShape/' + self.CB_embryoNames_Ana.currentText()
+            self.reconstructView = self.LE_projectFolder_Ana.text() + '/CellMembranePostseg/' + self.CB_embryoNames_Ana.currentText() + 'LabelUnified/'
+            self.embryo = self.CB_embryoNames_Ana.currentText()
+        except Exception:
+            QMessageBox.warning(self, 'Error!', 'Please check your paras!')
+
+        self.allthread = RunAllThread(config)
+        self.allthread.signal.connect(self.ThreadCallback)
+        self.allthread.process.connect(self.ProcessCallback)
+        self.allthread.segmentation.connect(self.SegmentationCallback)
+        self.allthread.analysis.connect(self.AnalysisCallback)
+        self.allthread.start()
 
     def chooseRawFolder_Pre(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
@@ -255,7 +410,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
         self.LE_maxTime_Seg.setText(self.LE_maxTime.text())
         self.LE_sliceNum_Ana.setText(self.LE_sliceNum.text())
-        self.call = False
+        self.PreprocessCall = False
         self.pthread = PreprocessThread(config)
         self.pthread.signal.connect(self.ThreadCallback)
         self.pthread.process.connect(self.ProcessCallback)
@@ -273,10 +428,13 @@ class MainForm(QMainWindow, Ui_MainWindow):
         if call == True:
             if func == 'Preprocess':
                 self.PreprogressBar.setValue(100)
+                self.PreprocessCall = True
             elif func == 'Segmentation':
                 self.SegmentationBar.setValue(100)
+                self.SegmentationCall = True
             elif func == 'Analysis':
                 self.AnalysisBar.setValue(100)
+                self.AnalysisCall = True
             QMessageBox.information(self, func, func+' success!')
         elif call == False:
             QMessageBox.warning(self, 'Error!', func+' failed!')
@@ -285,7 +443,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def ProcessCallback(self, func, current, max_time):
         self.label_Preprocess.setText(func+':')
-        self.PreprogressBar.setValue((current) * 100 / (max_time * 3))
+        self.PreprogressBar.setValue((current+1) * 100 / max_time)
 
     def chooseProjectFolder_Seg(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Stack Folder', './')
@@ -376,7 +534,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config["debug"]["save_cell_nomemb"] = False
         except Exception:
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
-        self.call = False
+        self.SegmentationCall = False
         self.sthread = SegmentationThread(config)
         self.sthread.signal.connect(self.ThreadCallback)
         self.sthread.process.connect(self.SegmentationCallback)
@@ -384,7 +542,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def SegmentationCallback(self, func, current, max_time):
         self.label_Segmentation.setText(func+':')
-        self.SegmentationBar.setValue((current) * 100 / (max_time * 2))
+        self.SegmentationBar.setValue((current+1) * 100 / max_time)
 
     def stopSegmentation(self):
         try:
@@ -441,10 +599,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config['para']['first_run'] = False
             config['para']["number_dictionary"] = self.LE_numberDict_Ana.text()
             config['para']["lineage_file"] = self.LE_lineage_Ana.text()
-            self.dirNameView = self.LE_projectFolder_Ana.text() + '/StateShape/' + self.CB_embryoNames_Ana.currentText()
+            self.dirNameView = self.LE_projectFolder_Ana.text() + '/StatShape/' + self.CB_embryoNames_Ana.currentText()
+            self.reconstructView = self.LE_projectFolder_Ana.text() + '/CellMembranePostseg/' + self.CB_embryoNames_Ana.currentText() + 'LabelUnified/'
+            self.embryo = self.CB_embryoNames_Ana.currentText()
         except Exception:
             QMessageBox.warning(self, 'Error!', 'Please check your paras!')
-        self.call = False
+        self.AnalysisCall = False
         self.athread = AnalysisThread(config)
         self.athread.signal.connect(self.ThreadCallback)
         self.athread.process.connect(self.AnalysisCallback)
@@ -452,7 +612,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def AnalysisCallback(self, func, current, max_time):
         self.label_Analysis.setText(func+':')
-        self.AnalysisBar.setValue((current) * 100 / (max_time))
+        self.AnalysisBar.setValue((current+1) * 100 / max_time)
 
     def stopAnalysis(self):
         try:
@@ -512,7 +672,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def openResultFolder(self):
         try:
             if self.LE_projectFolder.text() != '':
-                subprocess.call(['open',self.LE_projectFolder.text()])
+                folder = self.LE_projectFolder.text()
+            elif self.LE_projectFolder_Seg.text() != '':
+                folder = self.LE_projectFolder_Seg.text()
+            elif self.LE_projectFolder_Ana.text() != '':
+                folder = self.LE_projectFolder_Ana.text()
+            subprocess.call(['open', folder])
         except Exception:
             QMessageBox.warning(self, 'Warning!', 'Open Result Folder Failed!')
 
@@ -531,4 +696,5 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     win = MainForm()
     win.show()
+    win.iren.Initialize()
     sys.exit(app.exec())
