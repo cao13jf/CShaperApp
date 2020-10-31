@@ -1,7 +1,3 @@
-LE_maxTime_Seg:14
-LE_batchSize_Seg:1
-LE_modelFile_Seg:/home/home/ProjectCode/LearningCell/CShaper/CShaper/Resource/TrainedModel/DMapNet_PUB_5000.ckpt
-LE_projectFolder_Seg:/home/home/ProjectCode/LearningCell/CShaper/CShaper/TestProject
 LE_sliceNum_Ana:68
 LE_projectFolder_Ana:/home/home/ProjectCode/LearningCell/CShaper/CShaper/TestProject
 LE_rawFolder_Ana:/home/home/ProjectCode/LearningCell/CShaper/CShaper/Data/MembRaw
@@ -17,7 +13,11 @@ LE_zResolution:0.42
 LE_projectFolder:/home/home/ProjectCode/LearningCell/CShaper/CShaper/TestProject
 LE_reduceRatio:0.3
 LE_numberDict:/home/home/ProjectCode/LearningCell/CShaper/CShaper/Resource/number_dictionary.csv
+LE_maxTime_Seg:14
+LE_batchSize_Seg:1
+LE_modelFile_Seg:/home/home/ProjectCode/LearningCell/CShaper/CShaper/Resource/TrainedModel/DMapNet_PUB_5000.ckpt
+LE_projectFolder_Seg:/home/home/ProjectCode/LearningCell/CShaper/CShaper/TestProject
+CB_embryoNames_Ana:
+CB_embryoNames:
 CB_embryoNames_Seg:181210plc1p1
-CB_lineage_Seg:No lineage
-CB_embryoNames_Ana:181210plc1p1
-CB_embryoNames:181210plc1p1
+CB_lineage_Seg:After segmentation
