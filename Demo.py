@@ -22,6 +22,7 @@ from ShapeUtil.data_structure import *
 import subprocess
 import pandas as pd
 import numpy as np
+import platform
 
 warnings.filterwarnings("ignore")
 MASK_OPACITY = 1
@@ -31,6 +32,8 @@ MASK_SMOOTHNESS = 500
 class MainForm(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainForm, self).__init__()
+        self.setWindowTitle('CShaper')
+        self.setWindowIcon(PyQt5.QtGui.QIcon('icon.jpg'))
         self.setupUi(self)
         self.dirNameView = ''
         self.Function.currentChanged.connect(self.updateBlankInfo)
@@ -51,10 +54,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.render_window.Render()
         self.iren = self.render_window.GetInteractor()
 
-        self.x = 0
+        self.x = 1
         self.maxNum = 1
         self.Label_idx.setWordWrap(True)
         self.Label_idx.setAlignment(PyQt5.QtCore.Qt.AlignTop)
+        self.Slider_3d.setMinimum(1)
         self.Slider_3d.valueChanged.connect(self.set3DImage)
 
         # combine_slice.py
@@ -170,7 +174,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.Model.setHorizontalHeaderLabels(input_table)
         for i in range(input_table_rows):
             for j in range(input_table_colunms):
-                self.Model.setItem(i, j, QStandardItem(str(data[i][j])))
+                if str(data[i][j]) == 'nan':
+                    self.Model.setItem(i, j, QStandardItem(''))
+                else:
+                    self.Model.setItem(i, j, QStandardItem(str(data[i][j])))
 
         tableView.setModel(self.Model)
         tableView.updateEditorData()
@@ -629,10 +636,11 @@ class MainForm(QMainWindow, Ui_MainWindow):
             i.clear()
 
     def saveProject(self):
-        dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Save Folder', './')
+        # dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Save Folder', './')
+        fileName, ok = QtWidgets.QFileDialog.getSaveFileName(self, 'Save Project File', './', 'Project File(*.project)')
         try:
             # save all the paras
-            with open(dirName+'/test.project', 'w', encoding='utf8', newline='') as fout:
+            with open(fileName, 'w', encoding='utf8', newline='') as fout:
 
                 for i in self.findChildren(QLineEdit):
                     fout.write(i.objectName() + ':' + i.text() + '\n')
@@ -677,6 +685,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 folder = self.LE_projectFolder_Seg.text()
             elif self.LE_projectFolder_Ana.text() != '':
                 folder = self.LE_projectFolder_Ana.text()
+            print(platform.uname())
             subprocess.call(['open', folder])
         except Exception:
             QMessageBox.warning(self, 'Warning!', 'Open Result Folder Failed!')
