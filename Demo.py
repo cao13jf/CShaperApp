@@ -234,7 +234,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def set3DImage(self, x):
         self.x = x
         self.Label_idx.setText('{}/{}'.format('%03d' % self.x, '%03d' % self.maxNum))
-        file = self.reconstructView + self.embryo + '_' + str('%03d'%self.x) + '_SegCell.nii.gz'
+        file = self.reconstructView + self.embryo + '_' + str('%03d'%self.x) + '_segCell.nii.gz'
         self.construct3D(file)
 
     def updateDataTable(self):
@@ -257,7 +257,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                         filename = self.dirNameView + '/' + i
                 self.showDataTable(filename, self.tableView)
             elif self.tabWidget.currentIndex() == 3:
-                first = self.reconstructView + self.embryo + '_' + '001' + '_SegCell.nii.gz'
+                first = self.reconstructView + self.embryo + '_' + '001' + '_segCell.nii.gz'
                 r = os.listdir(self.reconstructView)
                 self.maxNum = len(r)
                 self.Slider_3d.setMaximum(self.maxNum)

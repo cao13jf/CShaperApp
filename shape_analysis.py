@@ -103,8 +103,15 @@ def run_shape_analysis(process, config):
         cell_volume_surface = cell_volume_surface.set_index("nucleus_name")
         volume_lists.append(cell_volume_surface["volume"].to_frame().T.dropna(axis=1))
         surface_lists.append(cell_volume_surface["surface"].to_frame().T.dropna(axis=1))
+
     volume_stat = pd.concat(volume_lists, keys=range(1, max_time+1), ignore_index=True, axis=0, sort=False, join="outer")
     surface_stat = pd.concat(surface_lists, keys=range(1, max_time+1), ignore_index=True, axis=0, sort=False, join="outer")
+    cell_numbers = np.count_nonzero(~np.isnan(volume_stat.to_numpy()), axis=1).astype(np.uint16).tolist()
+
+    volume_stat = volume_stat.set_index(pd.Index(cell_numbers).astype("int64"))
+    volume_stat.index.name = "Cell Number"
+    surface_stat = surface_stat.set_index(pd.Index(cell_numbers).astype("int64"))
+    surface_stat.index.name = "Cell Number"
     volume_stat.to_csv(os.path.join(config["stat_folder"], embryo_name, embryo_name.split('/')[-1] + "_volume"+'.csv'))
     surface_stat.to_csv(os.path.join(config["stat_folder"], embryo_name, embryo_name.split('/')[-1] + "_surface"+'.csv'))
 
@@ -113,11 +120,13 @@ def run_shape_analysis(process, config):
         shutil.rmtree(os.path.join(config["project_folder"], 'TemCellGraph'))
     # save statistical embryonic files
     # delete columns with all zeros for efficiency
-    stat_embryo = stat_embryo.loc[:, ((stat_embryo != 0)&(~np.isnan(stat_embryo))).any(axis=0)]
+    stat_embryo = stat_embryo.loc[:, ((stat_embryo != 0) & (~np.isnan(stat_embryo))).any(axis=0)]
     save_file_name = os.path.join(config['stat_folder'], embryo_name, config['embryo_name']+'_contact.txt')
     save_file_name_csv = os.path.join(config['stat_folder'], embryo_name, config['embryo_name']+'_contact.csv')
     # with open(save_file_name, 'wb') as f:
         # pickle.dump(stat_embryo, f)
+    stat_embryo = stat_embryo.set_index(pd.Index(cell_numbers))
+    stat_embryo.index.name = "Cell Number"
     stat_embryo.to_csv(save_file_name_csv)
 
 
