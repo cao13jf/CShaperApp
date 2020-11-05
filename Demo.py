@@ -657,11 +657,18 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 r = fr.readlines()
                 for i in r:
                     temp = i.split(':')
-                    temp[1] = temp[1].strip('\n')
-                    if self.findChild(QLineEdit,temp[0]) is not None:
-                        self.findChild(QLineEdit, temp[0]).setText(temp[1])
-                    elif self.findChild(QComboBox, temp[0]) is not None:
-                        self.findChild(QComboBox, temp[0]).setCurrentText(temp[1])
+                    if len(temp)<3:
+                        temp[1] = temp[1].strip('\n')
+                        if self.findChild(QLineEdit,temp[0]) is not None:
+                            self.findChild(QLineEdit, temp[0]).setText(temp[1])
+                        elif self.findChild(QComboBox, temp[0]) is not None:
+                            self.findChild(QComboBox, temp[0]).setCurrentText(temp[1])
+                    else:
+                        temp_text = temp[1]+':'+temp[2].strip('\n')
+                        if self.findChild(QLineEdit,temp[0]) is not None:
+                            self.findChild(QLineEdit, temp[0]).setText(temp_text)
+                        elif self.findChild(QComboBox, temp[0]) is not None:
+                            self.findChild(QComboBox, temp[0]).setCurrentText(temp_text)
         except Exception:
             QMessageBox.warning(self, 'Warning!', 'Project Load Failed!')
 
@@ -685,8 +692,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 folder = self.LE_projectFolder_Seg.text()
             elif self.LE_projectFolder_Ana.text() != '':
                 folder = self.LE_projectFolder_Ana.text()
-            print(platform.uname())
-            subprocess.call(['open', folder])
+            if platform.system() == 'Windows':
+                os.startfile(folder)
+            else:
+                subprocess.call(['open', folder])
         except Exception:
             QMessageBox.warning(self, 'Warning!', 'Open Result Folder Failed!')
 
