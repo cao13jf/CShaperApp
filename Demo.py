@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import (QApplication, QGridLayout, QGroupBox, QDialog, QTab
                              QLabel, QSlider, QVBoxLayout, QMainWindow, QLineEdit,
                              QMessageBox, QComboBox, QTableWidgetItem, QAbstractItemView)
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QStandardItemModel,QStandardItem
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import PyQt5.QtCore
 from FuncThread import PreprocessThread, SegmentationThread, AnalysisThread, RunAllThread
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -90,20 +90,20 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.Btn_runAll.clicked.connect(self.runAll)
         self.actionRun_ALL.triggered.connect(self.runAll)
 
-        #action File
+        # action File
         self.actionNew_Project.triggered.connect(self.newProjoect)
         self.actionSave_Project.triggered.connect(self.saveProject)
         self.actionLoad_Project.triggered.connect(self.loadProject)
 
         self.actionOpen_Result_Folder.triggered.connect(self.openResultFolder)
         # PyQt5.QtWidgets.QUndoCommand
-        #action Edit
+        # action Edit
         self.actionUndo.triggered.connect(self.undoEdit)
         self.actionRedo.triggered.connect(self.redoEdit)
         self.actionCopy.triggered.connect(self.copyEdit)
         self.actionPaste.triggered.connect(self.pasteEdit)
 
-        #action About
+        # action About
         self.actionCopy_Right.triggered.connect(self.copyRight)
         self.actionHelp.triggered.connect(self.helpAbout)
         self.actionVersion.triggered.connect(self.versionAbout)
@@ -160,7 +160,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     for i in r:
                         if i.endswith('surface.csv'):
                             file = self.dirNameView + '/' + i
-                    self.showDataTable(file,self.tableView_3)
+                    self.showDataTable(file, self.tableView_3)
                 except Exception:
                     QMessageBox.warning(self, 'Error!', 'Folder Error!')
 
@@ -234,7 +234,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def set3DImage(self, x):
         self.x = x
         self.Label_idx.setText('{}/{}'.format('%03d' % self.x, '%03d' % self.maxNum))
-        file = self.reconstructView + self.embryo + '_' + str('%03d'%self.x) + '_segCell.nii.gz'
+        file = self.reconstructView + self.embryo + '_' + str('%03d' % self.x) + '_segCell.nii.gz'
         self.construct3D(file)
 
     def updateDataTable(self):
@@ -270,7 +270,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def runAll(self):
         config = {}
         try:
-            #preprocess
+            # preprocess
             config['num_slice'] = int(self.LE_sliceNum.text())
             en = []
             en.append(self.CB_embryoNames.currentText())
@@ -284,7 +284,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config["lineage_file"] = self.LE_lineage.text()
             config["number_dictionary"] = self.LE_numberDict.text()
 
-            #segmentation
+            # segmentation
             config['para'] = {}
             config["para"]["project_folder"] = self.LE_projectFolder_Seg.text()
             en = []
@@ -340,7 +340,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
             config["debug"]["save_merged_seg"] = False
             config["debug"]["save_cell_nomemb"] = False
 
-            #analysis
+            # analysis
             config['para2'] = {}
             config['para2']['num_slice'] = int(self.LE_sliceNum_Ana.text())
             config['para2']['xy_resolution'] = float(self.LE_xyResolution_Ana.text())
@@ -385,11 +385,13 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
     def chooseLineageFile_Pre(self):
-        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File', self.LE_rawFolder.text(), "CSV Files(*.csv)")
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File',
+                                                                   self.LE_rawFolder.text(), "CSV Files(*.csv)")
         try:
             self.LE_lineage.setText(fileName)
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
+
     def chooseNumberDict(self):
         fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File',
                                                                    './', "CSV Files(*.csv)")
@@ -442,15 +444,15 @@ class MainForm(QMainWindow, Ui_MainWindow):
             elif func == 'Analysis':
                 self.AnalysisBar.setValue(100)
                 self.AnalysisCall = True
-            QMessageBox.information(self, func, func+' success!')
+            QMessageBox.information(self, func, func + ' success!')
         elif call == False:
-            QMessageBox.warning(self, 'Error!', func+' failed!')
+            QMessageBox.warning(self, 'Error!', func + ' failed!')
         else:
             pass
 
     def ProcessCallback(self, func, current, max_time):
-        self.label_Preprocess.setText(func+':')
-        self.PreprogressBar.setValue((current+1) * 100 / max_time)
+        self.label_Preprocess.setText(func + ':')
+        self.PreprogressBar.setValue((current + 1) * 100 / max_time)
 
     def chooseProjectFolder_Seg(self):
         dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Stack Folder', './')
@@ -471,7 +473,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Model File',
                                                                    './', "Model Files(*.ckpt.*)")
         try:
-            model_name = re.findall(r'^.*.ckpt',fileName)
+            model_name = re.findall(r'^.*.ckpt', fileName)
             self.LE_modelFile_Seg.setText(model_name[0])
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Model!')
@@ -479,7 +481,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
     def runSegmentation(self):
         config = {}
         try:
-            config['para']={}
+            config['para'] = {}
             config["para"]["project_folder"] = self.LE_projectFolder_Seg.text()
             en = []
             en.append(self.CB_embryoNames_Seg.currentText())
@@ -548,8 +550,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.sthread.start()
 
     def SegmentationCallback(self, func, current, max_time):
-        self.label_Segmentation.setText(func+':')
-        self.SegmentationBar.setValue((current+1) * 100 / max_time)
+        self.label_Segmentation.setText(func + ':')
+        self.SegmentationBar.setValue((current + 1) * 100 / max_time)
 
     def stopSegmentation(self):
         try:
@@ -585,7 +587,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
     def chooseLineageFile_Ana(self):
-        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File', './', "CSV Files(*.csv)")
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File', './',
+                                                                   "CSV Files(*.csv)")
         try:
             self.LE_lineage_Ana.setText(fileName)
         except Exception as e:
@@ -618,8 +621,8 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.athread.start()
 
     def AnalysisCallback(self, func, current, max_time):
-        self.label_Analysis.setText(func+':')
-        self.AnalysisBar.setValue((current+1) * 100 / max_time)
+        self.label_Analysis.setText(func + ':')
+        self.AnalysisBar.setValue((current + 1) * 100 / max_time)
 
     def stopAnalysis(self):
         try:
@@ -650,18 +653,26 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, 'Warning!', 'Project Save Failed!')
 
     def loadProject(self):
-        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Project File', './', "Project File(*.project)")
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Project File', './',
+                                                                   "Project File(*.project)")
 
         try:
             with open(fileName, 'r', encoding='utf8') as fr:
                 r = fr.readlines()
                 for i in r:
                     temp = i.split(':')
-                    temp[1] = temp[1].strip('\n')
-                    if self.findChild(QLineEdit,temp[0]) is not None:
-                        self.findChild(QLineEdit, temp[0]).setText(temp[1])
-                    elif self.findChild(QComboBox, temp[0]) is not None:
-                        self.findChild(QComboBox, temp[0]).setCurrentText(temp[1])
+                    if len(temp) < 3:
+                        temp[1] = temp[1].strip('\n')
+                        if self.findChild(QLineEdit, temp[0]) is not None:
+                            self.findChild(QLineEdit, temp[0]).setText(temp[1])
+                        elif self.findChild(QComboBox, temp[0]) is not None:
+                            self.findChild(QComboBox, temp[0]).setCurrentText(temp[1])
+                    else:
+                        temp_text = temp[1] + ':' + temp[2].strip('\n')
+                        if self.findChild(QLineEdit, temp[0]) is not None:
+                            self.findChild(QLineEdit, temp[0]).setText(temp_text)
+                        elif self.findChild(QComboBox, temp[0]) is not None:
+                            self.findChild(QComboBox, temp[0]).setCurrentText(temp_text)
         except Exception:
             QMessageBox.warning(self, 'Warning!', 'Project Load Failed!')
 
@@ -685,8 +696,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 folder = self.LE_projectFolder_Seg.text()
             elif self.LE_projectFolder_Ana.text() != '':
                 folder = self.LE_projectFolder_Ana.text()
-            print(platform.uname())
-            subprocess.call(['open', folder])
+            if platform.system() == 'Windows':
+                os.startfile(folder)
+            else:
+                subprocess.call(['open', folder])
         except Exception:
             QMessageBox.warning(self, 'Warning!', 'Open Result Folder Failed!')
 
