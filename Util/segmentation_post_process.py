@@ -1,6 +1,7 @@
 
 # import dependency library
 import sys
+import shutil
 from tqdm import tqdm
 import multiprocessing as mp
 from skimage.segmentation import watershed
@@ -24,13 +25,18 @@ def post_process(process, config):
         embryo_names = os.listdir(membseg_path)
         embryo_names = [embryo_name for embryo_name in embryo_names if 'plc' in embryo_name.lower()]
     membseg_path = config_segdata['membseg_path']
-    all_cell_intensity = []
     parameters = []
     for one_embryo in embryo_names:
+        if os.path.isdir(os.path.join(config['result']['postseg_folder'], one_embryo)):
+            shutil.rmtree(os.path.join(config['result']['postseg_folder'], one_embryo))
+            os.makedirs(os.path.join(config['result']['postseg_folder'], one_embryo))
+        else:
+            os.path.join(config['result']['postseg_folder'], one_embryo)
+
         file_names = glob.glob(os.path.join(membseg_path, one_embryo, '*.nii.gz'))
         file_names.sort()
         for file_name in file_names[:config_segdata['max_time']]:
-            parameters.append([one_embryo,file_name, config])
+            parameters.append([one_embryo, file_name, config])
 
     mpPool = mp.Pool(mp.cpu_count()-1)
     for idx, _ in enumerate(tqdm(mpPool.imap_unordered(run_post, parameters), total=len(parameters), desc="Segment binary membrane to cells")):
@@ -79,7 +85,7 @@ def run_post(para):
         memb_edt = ndimage.morphology.distance_transform_edt(cell_bin_image > 0)
         memb_edt_reversed = memb_edt.max() - memb_edt
         # Implement watershed segmentation
-        watershed_seg = watershed(memb_edt_reversed, marker_volume.astype(np.uint16), watershed_line=True)
+        merged_seg = watershed(memb_edt_reversed, marker_volume.astype(np.uint16), watershed_line=True)
     else:
 
         #===========================================================
