@@ -1,5 +1,6 @@
 
 from CShaper import Ui_MainWindow
+from about import Ui_Dialog
 from PyQt5.QtWidgets import (QApplication, QGridLayout, QGroupBox, QDialog, QTableView,
                              QLabel, QSlider, QVBoxLayout, QMainWindow, QLineEdit,
                              QMessageBox, QComboBox, QTableWidgetItem, QAbstractItemView)
@@ -8,6 +9,7 @@ from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import PyQt5.QtCore
 from FuncThread import PreprocessThread, SegmentationThread, AnalysisThread, RunAllThread
 from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+import vtkmodules.all as vtk
 
 from reconstruction import *
 import SimpleITK as sitk
@@ -23,17 +25,27 @@ import subprocess
 import pandas as pd
 import numpy as np
 import platform
+import webbrowser
 
 warnings.filterwarnings("ignore")
 MASK_OPACITY = 1
 MASK_SMOOTHNESS = 500
 
 
+class ChildDialog(QDialog, Ui_Dialog):
+    def __init__(self):
+        QDialog.__init__(self)
+        self.child = Ui_Dialog()  # 子窗口的实例化
+
+        self.setWindowIcon(PyQt5.QtGui.QIcon('CShaperLogo.png'))
+        self.child.setupUi(self)
+
+
 class MainForm(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainForm, self).__init__()
         self.setWindowTitle('CShaper')
-        self.setWindowIcon(PyQt5.QtGui.QIcon('icon.jpg'))
+        self.setWindowIcon(PyQt5.QtGui.QIcon('CShaperLogo.png'))
         self.setupUi(self)
         self.dirNameView = ''
         self.Function.currentChanged.connect(self.updateBlankInfo)
@@ -47,10 +59,12 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.main_widget = QtWidgets.QWidget(self)
         self.vtkWidget = QVTKRenderWindowInteractor(self.main_widget)
         self.gridLayout.addWidget(self.vtkWidget)
+
+        renderer = vtk.vtkRenderer()
+        renderer.SetBackground(1, 1, 1)
+        self.renderlist = []
         self.render_window = self.vtkWidget.GetRenderWindow()
-        self.renderer = vtk.vtkRenderer()
-        self.renderer.SetBackground(1, 1, 1)
-        self.render_window.AddRenderer(self.renderer)
+        self.render_window.AddRenderer(renderer)
         self.render_window.Render()
         self.iren = self.render_window.GetInteractor()
 
@@ -59,6 +73,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.Label_idx.setWordWrap(True)
         self.Label_idx.setAlignment(PyQt5.QtCore.Qt.AlignTop)
         self.Slider_3d.setMinimum(1)
+        # self.Slider_3d.sliderReleased.connect(self.set3DImage)
         self.Slider_3d.valueChanged.connect(self.set3DImage)
 
         # combine_slice.py
@@ -104,8 +119,10 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.actionPaste.triggered.connect(self.pasteEdit)
 
         # action About
-        self.actionCopy_Right.triggered.connect(self.copyRight)
-        self.actionHelp.triggered.connect(self.helpAbout)
+        # self.actionCopy_Right.triggered.connect(self.copyRight)
+        # child = ChildDialog()
+        # self.actionHelp.triggered.connect(child.show)
+        # self.actionHelp.triggered.connect(self.helpAbout)
         self.actionVersion.triggered.connect(self.versionAbout)
 
     def updateBlankInfo(self):
@@ -160,32 +177,36 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     for i in r:
                         if i.endswith('surface.csv'):
                             file = self.dirNameView + '/' + i
+                            break
                     self.showDataTable(file, self.tableView_3)
                 except Exception:
                     QMessageBox.warning(self, 'Error!', 'Folder Error!')
 
     def showDataTable(self, filename, tableView):
-        input_table = pd.read_csv(filename)
+        input_table = pd.read_csv(filename,header=None)
         input_table_rows = input_table.shape[0]
         input_table_colunms = input_table.shape[1]
 
         data = input_table.values.tolist()
         self.Model = QStandardItemModel()
-        self.Model.setHorizontalHeaderLabels(input_table)
         for i in range(input_table_rows):
             for j in range(input_table_colunms):
                 if str(data[i][j]) == 'nan':
                     self.Model.setItem(i, j, QStandardItem(''))
                 else:
-                    self.Model.setItem(i, j, QStandardItem(str(data[i][j])))
-
+                    try:
+                        self.Model.setItem(i, j, QStandardItem(str(round(data[i][j], 2))))
+                    except Exception:
+                        self.Model.setItem(i, j, QStandardItem(str(data[i][j])))
+        tableView.verticalHeader().hide()
+        tableView.horizontalHeader().hide()
         tableView.setModel(self.Model)
         tableView.updateEditorData()
         tableView.show()
 
     def construct3D(self, file):
-        self.renderer = vtk.vtkRenderer()
-        self.renderer.SetBackground(1, 1, 1)
+        renderer = vtk.vtkRenderer()
+        renderer.SetBackground(1, 1, 1)
         mask = NiiObject()
         mask.reader = vtk.vtkNIFTIImageReader()
         mask.reader.SetFileName(file)
@@ -213,29 +234,36 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
                     mask.labels[count].extractor = create_mask_extractor(mask)
                     add_surface_rendering(mask, count, label_idx)
-                    self.renderer.AddActor(mask.labels[count].actor)
+                    renderer.AddActor(mask.labels[count].actor)
                     count += 1
                 mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
                 mask.labels[count].extractor = create_mask_extractor(mask)
                 add_surface_rendering(mask, count, label_idx + 1)
-                self.renderer.AddActor(mask.labels[count].actor)
+                renderer.AddActor(mask.labels[count].actor)
                 count += 1
                 if label_idx < n_labels:
                     mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
                     mask.labels[count].extractor = create_mask_extractor(mask)
                     add_surface_rendering(mask, count, label_idx + 2)
-                    self.renderer.AddActor(mask.labels[count].actor)
+                    renderer.AddActor(mask.labels[count].actor)
                     count += 1
-        self.renderer.ResetCamera()
-        self.render_window.AddRenderer(self.renderer)
-        self.render_window.Render()
-        self.iren = self.render_window.GetInteractor()
+        renderer.ResetCamera()
+        return renderer
+
+
+    def create3DImage(self):
+        for i in range(self.maxNum):
+            file = self.reconstructView + self.embryo + '_' + str('%03d' % (i+1)) + '_segCell.nii.gz'
+            self.renderlist.append(self.construct3D(file))
 
     def set3DImage(self, x):
-        self.x = x
         self.Label_idx.setText('{}/{}'.format('%03d' % self.x, '%03d' % self.maxNum))
-        file = self.reconstructView + self.embryo + '_' + str('%03d' % self.x) + '_segCell.nii.gz'
-        self.construct3D(file)
+        image = self.renderlist[x-1]
+        for i in self.renderlist:
+            self.render_window.RemoveRenderer(i)
+        self.render_window.AddRenderer(image)
+        self.render_window.Render()
+        self.iren = self.render_window.GetInteractor()
 
     def updateDataTable(self):
         filename = ''
@@ -245,24 +273,28 @@ class MainForm(QMainWindow, Ui_MainWindow):
                 for i in r:
                     if i.endswith('surface.csv'):
                         filename = self.dirNameView + '/' + i
+                        break
                 self.showDataTable(filename, self.tableView_3)
             elif self.tabWidget.currentIndex() == 1:
                 for i in r:
                     if i.endswith('volume.csv'):
                         filename = self.dirNameView + '/' + i
+                        break
                 self.showDataTable(filename, self.tableView_2)
             elif self.tabWidget.currentIndex() == 2:
                 for i in r:
                     if i.endswith('contact.csv'):
                         filename = self.dirNameView + '/' + i
+                        break
                 self.showDataTable(filename, self.tableView)
             elif self.tabWidget.currentIndex() == 3:
-                first = self.reconstructView + self.embryo + '_' + '001' + '_segCell.nii.gz'
-                r = os.listdir(self.reconstructView)
-                self.maxNum = len(r)
-                self.Slider_3d.setMaximum(self.maxNum)
-                self.Label_idx.setText('{}/{}'.format('%03d' % 1, '%03d' % self.maxNum))
-                self.construct3D(first)
+                if self.renderlist == []:
+                    r = os.listdir(self.reconstructView)
+                    self.maxNum = len(r)
+                    self.Slider_3d.setMaximum(self.maxNum)
+                    self.create3DImage()
+                    self.set3DImage(1)
+                    self.Label_idx.setText('{}/{}'.format('%03d' % 1, '%03d' % self.maxNum))
 
         except Exception:
             pass
@@ -572,14 +604,14 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
     def chooseProjectFolder_Ana(self):
-        dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Raw Folder', './')
+        dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Project Folder', './')
         try:
             self.LE_projectFolder_Ana.setText(dirName)
         except Exception as e:
             QMessageBox.warning(self, 'Warning!', 'Please Choose Right Folder!')
 
     def chooseNumberDict_Ana(self):
-        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Lineage File',
+        fileName, fileType = QtWidgets.QFileDialog.getOpenFileName(self, 'Choose Number Dictionary',
                                                                    './', "CSV Files(*.csv)")
         try:
             self.LE_numberDict_Ana.setText(fileName)
@@ -638,6 +670,29 @@ class MainForm(QMainWindow, Ui_MainWindow):
         for i in self.findChildren(QComboBox):
             i.clear()
 
+        self.PreprogressBar.reset()
+        self.label_Preprocess.setText('')
+        self.SegmentationBar.reset()
+        self.label_Segmentation.setText('')
+        self.AnalysisBar.reset()
+        self.label_Analysis.setText('')
+        self.tableView.reset()
+        self.tableView_2.reset()
+        self.tableView_3.reset()
+        self.renderlist = []
+        # if self.LE_rawFolder.text() != '':
+        #     listdir = os.listdir(self.LE_rawFolder.text())
+        #     listdir.sort()
+        #     self.CB_embryoNames.addItems(listdir)
+        # if self.LE_projectFolder_Seg.text() != '':
+        #     listdir = os.listdir(self.LE_projectFolder_Seg.text())
+        #     listdir.sort()
+        #     self.CB_embryoNames_Seg.addItems(listdir)
+        # if self.LE_rawFolder_Ana.text() != '':
+        #     listdir = os.listdir(self.LE_rawFolder_Ana.text())
+        #     listdir.sort()
+        #     self.CB_embryoNames_Ana.addItems(listdir)
+
     def saveProject(self):
         # dirName = QtWidgets.QFileDialog.getExistingDirectory(self, 'Choose Save Folder', './')
         fileName, ok = QtWidgets.QFileDialog.getSaveFileName(self, 'Save Project File', './', 'Project File(*.project)')
@@ -657,6 +712,16 @@ class MainForm(QMainWindow, Ui_MainWindow):
                                                                    "Project File(*.project)")
 
         try:
+            self.PreprogressBar.reset()
+            self.label_Preprocess.setText('')
+            self.SegmentationBar.reset()
+            self.label_Segmentation.setText('')
+            self.AnalysisBar.reset()
+            self.label_Analysis.setText('')
+            self.tableView.reset()
+            self.tableView_2.reset()
+            self.tableView_3.reset()
+            self.renderlist = []
             with open(fileName, 'r', encoding='utf8') as fr:
                 r = fr.readlines()
                 for i in r:
@@ -673,6 +738,18 @@ class MainForm(QMainWindow, Ui_MainWindow):
                             self.findChild(QLineEdit, temp[0]).setText(temp_text)
                         elif self.findChild(QComboBox, temp[0]) is not None:
                             self.findChild(QComboBox, temp[0]).setCurrentText(temp_text)
+            if self.LE_rawFolder.text() != '':
+                listdir = os.listdir(self.LE_rawFolder.text())
+                listdir.sort()
+                self.CB_embryoNames.addItems(listdir)
+            if self.LE_projectFolder_Seg.text() != '':
+                listdir = os.listdir(self.LE_projectFolder_Seg.text())
+                listdir.sort()
+                self.CB_embryoNames_Seg.addItems(listdir)
+            if self.LE_rawFolder_Ana.text() != '':
+                listdir = os.listdir(self.LE_rawFolder_Ana.text())
+                listdir.sort()
+                self.CB_embryoNames_Ana.addItems(listdir)
         except Exception:
             QMessageBox.warning(self, 'Warning!', 'Project Load Failed!')
 
@@ -704,19 +781,24 @@ class MainForm(QMainWindow, Ui_MainWindow):
             QMessageBox.warning(self, 'Warning!', 'Open Result Folder Failed!')
 
     def versionAbout(self):
-        QMessageBox.information(self, 'Version', 'The version of software is 1.0.0 alpha.')
+        try:
+            webbrowser.open('https://github.com/cao13jf/CShaperAPP.git')
+        except Exception:
+            pass
 
     def helpAbout(self):
-        QMessageBox.information(self, 'Help', 'This software is about ... our github is https://.....')
+        QMessageBox.information(self, 'About CShaper', 'CShaper APP is used to segment C. elegans embryo at single-cell level. Cell volume, cell surface and cell-cell contact surface are collected automatically in order to facilitate morphological researches on C. elegans.')
 
-    def copyRight(self):
-        QMessageBox.information(self, 'Copy Right', 'Here is the copy right information of our software.')
 
 
 if __name__ == '__main__':
     freeze_support()
     app = QtWidgets.QApplication(sys.argv)
     win = MainForm()
+    child = ChildDialog()
+    child.resize(800,400)
+    child.setFixedSize(800,400)
+    win.actionHelp.triggered.connect(child.show)
     win.show()
     win.iren.Initialize()
     sys.exit(app.exec())
