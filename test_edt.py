@@ -1,6 +1,7 @@
 from __future__ import absolute_import, print_function
 
 # import dependency library
+import shutil
 import tensorflow as tf
 
 # import user defined library
@@ -84,6 +85,9 @@ def test(process, config):
             os.makedirs(save_folder)  # If the target folder doesn't exist, create a new one
         test_time = []
         data_number = config_data.get('max_time', 100) * len(config_data["data_names"])
+        if os.path.isdir(os.path.join(save_folder, emrbyo_name)):
+            shutil.rmtree(os.path.join(save_folder, emrbyo_name))
+
         for i in tqdm(range(0, data_number), desc='Extracting binary membrane'):
             process.emit('1/2 Extracting binary membrane', i, data_number)
             # TODO: 1 / 2 Process name: `Extracting binary membrane`;  current status: `i`; final status: `data_number`;
@@ -126,7 +130,7 @@ def test(process, config):
             final_label = np.zeros(temp_size, out_label.dtype)
             final_label = set_crop_to_volume(final_label, temp_bbox[0], temp_bbox[1], out_label)
             final_label = transpose_volumes_reverse(final_label, slice_direction)
-            save_file = os.path.join(save_folder,emrbyo_name, emrbyo_name + "_" + img_names.split(".")[0].split("_")[1] + "_segMemb.nii.gz")
+            save_file = os.path.join(save_folder, emrbyo_name, emrbyo_name + "_" + img_names.split(".")[0].split("_")[1] + "_segMemb.nii.gz")
             save_array_as_nifty_volume(final_label, save_file) # os.path.join(save_folder, one_embryo, one_embryo + "_" + tp_str.zfill(3) + "_cell.nii.gz")
 
         sess.close()

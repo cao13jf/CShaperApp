@@ -375,7 +375,7 @@ def construct_stat_embryo(cell_tree, max_time):
                 first_level_names.append(name1)
                 name_combination.append((name1, name2))
 
-    multi_index = pd.MultiIndex.from_tuples(name_combination, names=['cell1', 'cell2'])
+    multi_index = pd.MultiIndex.from_tuples(name_combination, names=['Cell 1', 'Cell 2'])
     stat_embryo = pd.DataFrame(np.full(shape=(max_time, len(name_combination)), fill_value=np.nan, dtype=np.float32),
                                index=range(1, max_time+1), columns=multi_index)
     # set zero element to express the exist of the specific nucleus
