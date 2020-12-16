@@ -63,6 +63,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         renderer = vtk.vtkRenderer()
         renderer.SetBackground(1, 1, 1)
         self.renderlist = []
+        self.MASK_COLORS = []
         self.render_window = self.vtkWidget.GetRenderWindow()
         self.render_window.AddRenderer(renderer)
         self.render_window.Render()
@@ -223,26 +224,28 @@ class MainForm(QMainWindow, Ui_MainWindow):
                         ccc[k] += 1
                     else:
                         ccc[k] = 1
-        MASK_COLORS = []
-        for i in range(n_labels):
-            temp = (random(), random(), random())
-            MASK_COLORS.append(temp)
+
         count = 0
         for label_idx in range(n_labels + 1):
+            if count>len(self.MASK_COLORS)-1:
+                for i in range(count-len(self.MASK_COLORS)+1):
+                    temp = (random(), random(), random())
+                    self.MASK_COLORS.append(temp)
+
             if label_idx in ccc.keys():
                 if label_idx > 0:
-                    mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
+                    mask.labels.append(NiiLabel(self.MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
                     mask.labels[count].extractor = create_mask_extractor(mask)
                     add_surface_rendering(mask, count, label_idx)
                     renderer.AddActor(mask.labels[count].actor)
                     count += 1
-                mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
+                mask.labels.append(NiiLabel(self.MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
                 mask.labels[count].extractor = create_mask_extractor(mask)
                 add_surface_rendering(mask, count, label_idx + 1)
                 renderer.AddActor(mask.labels[count].actor)
                 count += 1
                 if label_idx < n_labels:
-                    mask.labels.append(NiiLabel(MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
+                    mask.labels.append(NiiLabel(self.MASK_COLORS[count], MASK_OPACITY, MASK_SMOOTHNESS))
                     mask.labels[count].extractor = create_mask_extractor(mask)
                     add_surface_rendering(mask, count, label_idx + 2)
                     renderer.AddActor(mask.labels[count].actor)
@@ -252,12 +255,17 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
 
     def create3DImage(self):
+        self.renderlist = []
+        self.MASK_COLORS = []
+        for i in range(1000):
+            temp = (random(), random(), random())
+            self.MASK_COLORS.append(temp)
         for i in range(self.maxNum):
             file = self.reconstructView + self.embryo + '_' + str('%03d' % (i+1)) + '_segCell.nii.gz'
             self.renderlist.append(self.construct3D(file))
 
     def set3DImage(self, x):
-        self.Label_idx.setText('{}/{}'.format('%03d' % self.x, '%03d' % self.maxNum))
+        self.Label_idx.setText('{}/{}'.format('%03d' % x, '%03d' % self.maxNum))
         image = self.renderlist[x-1]
         for i in self.renderlist:
             self.render_window.RemoveRenderer(i)

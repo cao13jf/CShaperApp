@@ -763,13 +763,13 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
                  <property name="minimumSize">
                   <size>
                    <width>0</width>
-                   <height>50</height>
+                   <height>0</height>
                   </size>
                  </property>
                  <property name="maximumSize">
                   <size>
                    <width>16777215</width>
-                   <height>50</height>
+                   <height>25</height>
                   </size>
                  </property>
                  <property name="text">
@@ -816,10 +816,10 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
     <enum>Qt::ActionsContextMenu</enum>
    </property>
    <property name="layoutDirection">
-    <enum>Qt::RightToLeft</enum>
+    <enum>Qt::LeftToRight</enum>
    </property>
    <property name="autoFillBackground">
-    <bool>false</bool>
+    <bool>true</bool>
    </property>
    <property name="defaultUp">
     <bool>false</bool>
@@ -827,23 +827,34 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
    <property name="nativeMenuBar">
     <bool>true</bool>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="menuBlank">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
     <property name="layoutDirection">
      <enum>Qt::LeftToRight</enum>
     </property>
     <property name="title">
-     <string>&amp;File</string>
+     <string>          </string>
     </property>
     <property name="toolTipsVisible">
      <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
     </property>
     <addaction name="actionNew_Project"/>
     <addaction name="actionSave_Project"/>
     <addaction name="actionLoad_Project"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
     <property name="title">
-     <string>&amp;Edit</string>
+     <string>Edit</string>
     </property>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
@@ -851,9 +862,6 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
     <addaction name="actionPaste"/>
    </widget>
    <widget class="QMenu" name="menuRun">
-    <property name="mouseTracking">
-     <bool>true</bool>
-    </property>
     <property name="title">
      <string>&amp;Run</string>
     </property>
@@ -865,48 +873,31 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
    </widget>
    <widget class="QMenu" name="menuAbout">
     <property name="title">
-     <string>&amp;About</string>
+     <string>About</string>
     </property>
     <addaction name="actionVersion"/>
     <addaction name="actionHelp"/>
    </widget>
+   <addaction name="menuBlank"/>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
    <addaction name="menuRun"/>
    <addaction name="menuAbout"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionNew_Project">
+  <action name="actionCopy_Right">
    <property name="text">
-    <string>New Project</string>
+    <string>Copy Right</string>
    </property>
   </action>
-  <action name="actionSave_Project">
-   <property name="checkable">
-    <bool>false</bool>
-   </property>
+  <action name="actionVersion">
    <property name="text">
-    <string>Save Project</string>
+    <string>Online Document</string>
    </property>
   </action>
-  <action name="actionUndo">
+  <action name="actionHelp">
    <property name="text">
-    <string>Undo</string>
-   </property>
-  </action>
-  <action name="actionRedo">
-   <property name="text">
-    <string>Redo</string>
-   </property>
-  </action>
-  <action name="actionCopy">
-   <property name="text">
-    <string>Copy</string>
-   </property>
-  </action>
-  <action name="actionPaste">
-   <property name="text">
-    <string>Paste</string>
+    <string>About CShaperAPP</string>
    </property>
   </action>
   <action name="actionRun_Preprocess">
@@ -934,19 +925,34 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
     <string>Open Result Folder</string>
    </property>
   </action>
-  <action name="actionVersion">
+  <action name="actionUndo">
    <property name="text">
-    <string>Online Document</string>
+    <string>Undo</string>
    </property>
   </action>
-  <action name="actionHelp">
+  <action name="actionRedo">
    <property name="text">
-    <string>About CShaperAPP</string>
+    <string>Redo</string>
    </property>
   </action>
-  <action name="actionCopy_Right">
+  <action name="actionCopy">
    <property name="text">
-    <string>Copy Right</string>
+    <string>Copy</string>
+   </property>
+  </action>
+  <action name="actionPaste">
+   <property name="text">
+    <string>Paste</string>
+   </property>
+  </action>
+  <action name="actionNew_Project">
+   <property name="text">
+    <string>New Project</string>
+   </property>
+  </action>
+  <action name="actionSave_Project">
+   <property name="text">
+    <string>Save Project</string>
    </property>
   </action>
   <action name="actionLoad_Project">
