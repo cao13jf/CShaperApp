@@ -8,7 +8,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import PyQt5.QtCore
 from FuncThread import PreprocessThread, SegmentationThread, AnalysisThread, RunAllThread
-from vtk.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.all as vtk
 
 from reconstruction import *
@@ -44,9 +44,19 @@ class ChildDialog(QDialog, Ui_Dialog):
 class MainForm(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super(MainForm, self).__init__()
+
         self.setWindowTitle('CShaper')
         self.setWindowIcon(PyQt5.QtGui.QIcon('CShaperLogo.png'))
         self.setupUi(self)
+
+        self.lineEdit.setVisible(False)
+        self.lineEdit_2.setVisible(False)
+        self.lineEdit_3.setVisible(False)
+        self.lineEdit_4.setVisible(False)
+        self.lineEdit_5.setVisible(False)
+        self.pushButton.setVisible(False)
+        self.pushButton_2.setVisible(False)
+
         self.dirNameView = ''
         self.Function.currentChanged.connect(self.updateBlankInfo)
         self.tabWidget.currentChanged.connect(self.updateDataTable)
