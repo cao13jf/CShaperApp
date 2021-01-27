@@ -4,7 +4,7 @@ from about import Ui_Dialog
 from PyQt5.QtWidgets import (QApplication, QGridLayout, QGroupBox, QDialog, QTableView,
                              QLabel, QSlider, QVBoxLayout, QMainWindow, QLineEdit,
                              QMessageBox, QComboBox, QTableWidgetItem, QAbstractItemView)
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets,QtCore
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 import PyQt5.QtCore
 from FuncThread import PreprocessThread, SegmentationThread, AnalysisThread, RunAllThread
@@ -136,6 +136,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         # self.actionHelp.triggered.connect(child.show)
         # self.actionHelp.triggered.connect(self.helpAbout)
         self.actionVersion.triggered.connect(self.versionAbout)
+        self.actionLicense.triggered.connect(self.LicenseAbout)
 
     def updateBlankInfo(self):
         if self.Function.currentIndex() == 0:
@@ -207,11 +208,14 @@ class MainForm(QMainWindow, Ui_MainWindow):
                     self.Model.setItem(i, j, QStandardItem(''))
                 else:
                     try:
-                        self.Model.setItem(i, j, QStandardItem(str(round(data[i][j], 2))))
+                        self.Model.setItem(i, j, QStandardItem(str(round(float(data[i][j]), 2))))
                     except Exception:
                         self.Model.setItem(i, j, QStandardItem(str(data[i][j])))
+                self.Model.item(i,j).setTextAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignVCenter)
         tableView.verticalHeader().hide()
         tableView.horizontalHeader().hide()
+
+        tableView.itemDelegate()
         tableView.setModel(self.Model)
         tableView.updateEditorData()
         tableView.show()
@@ -801,7 +805,13 @@ class MainForm(QMainWindow, Ui_MainWindow):
 
     def versionAbout(self):
         try:
-            webbrowser.open('https://github.com/cao13jf/CShaperAPP.git')
+            webbrowser.open('https://github.com/cao13jf/CShaperAPP_PUB')
+        except Exception:
+            pass
+
+    def LicenseAbout(self):
+        try:
+            webbrowser.open('https://github.com/cao13jf/CShaperAPP_PUB/blob/main/LICENSE')
         except Exception:
             pass
 
