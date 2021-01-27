@@ -74,72 +74,11 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
           </item>
           <item>
            <layout class="QGridLayout" name="gridLayout_5">
-            <item row="4" column="3">
-             <widget class="QPushButton" name="Btn_runPreprocess">
-              <property name="text">
-               <string>Run Preprocess</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QComboBox" name="CB_embryoNames"/>
-            </item>
-            <item row="6" column="1">
-             <widget class="QLineEdit" name="LE_maxTime"/>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Z Resolution:</string>
-              </property>
-             </widget>
-            </item>
             <item row="3" column="1">
              <widget class="QLineEdit" name="LE_zResolution"/>
             </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="label_13">
-              <property name="text">
-               <string>Max Time:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="9" column="1">
-             <widget class="QLineEdit" name="LE_numberDict"/>
-            </item>
             <item row="7" column="1">
              <widget class="QLineEdit" name="LE_projectFolder"/>
-            </item>
-            <item row="2" column="2">
-             <widget class="QLabel" name="label_8">
-              <property name="text">
-               <string>um</string>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label_15">
-              <property name="text">
-               <string>Lineage File:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="2">
-             <widget class="QLabel" name="label_10">
-              <property name="text">
-               <string>um</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="LE_xyResolution"/>
-            </item>
-            <item row="9" column="2">
-             <widget class="QPushButton" name="Btn_numberDict">
-              <property name="text">
-               <string>Choose</string>
-              </property>
-             </widget>
             </item>
             <item row="4" column="0">
              <widget class="QLabel" name="label_11">
@@ -148,38 +87,13 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>Embryo Name:</string>
-              </property>
-             </widget>
+            <item row="5" column="1">
+             <widget class="QLineEdit" name="LE_sliceNum"/>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_7">
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_9">
               <property name="text">
-               <string>X-Y Resolution:   </string>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="2">
-             <widget class="QLabel" name="label_30">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="2">
-             <widget class="QLabel" name="label_31">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_14">
-              <property name="text">
-               <string>Project Folder:</string>
+               <string>Z Resolution:</string>
               </property>
              </widget>
             </item>
@@ -190,25 +104,25 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
               </property>
              </widget>
             </item>
-            <item row="5" column="1">
-             <widget class="QLineEdit" name="LE_sliceNum"/>
+            <item row="6" column="1">
+             <widget class="QLineEdit" name="LE_maxTime"/>
             </item>
-            <item row="0" column="2">
-             <widget class="QPushButton" name="Btn_rawFolder">
+            <item row="9" column="1">
+             <widget class="QLineEdit" name="LE_numberDict"/>
+            </item>
+            <item row="4" column="2">
+             <widget class="QLabel" name="label_30">
               <property name="text">
-               <string>Choose</string>
+               <string/>
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_5">
+            <item row="2" column="2">
+             <widget class="QLabel" name="label_8">
               <property name="text">
-               <string>Raw Folder:</string>
+               <string>um</string>
               </property>
              </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="LE_rawFolder"/>
             </item>
             <item row="7" column="2">
              <widget class="QPushButton" name="Btn_projectFolder">
@@ -217,20 +131,34 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
               </property>
              </widget>
             </item>
-            <item row="9" column="0">
-             <widget class="QLabel" name="label_16">
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="LE_xyResolution"/>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_5">
               <property name="text">
-               <string>Number Dictionary:</string>
+               <string>Raw Folder:</string>
               </property>
              </widget>
             </item>
-            <item row="8" column="1">
-             <widget class="QLineEdit" name="LE_lineage"/>
-            </item>
-            <item row="5" column="3">
-             <widget class="QPushButton" name="Btn_stopPreprocess">
+            <item row="0" column="2">
+             <widget class="QPushButton" name="Btn_rawFolder">
               <property name="text">
-               <string>Stop Preprocess </string>
+               <string>Choose</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="2">
+             <widget class="QPushButton" name="Btn_numberDict">
+              <property name="text">
+               <string>Choose</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QLabel" name="label_14">
+              <property name="text">
+               <string>Project Folder:</string>
               </property>
              </widget>
             </item>
@@ -241,8 +169,87 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
               </property>
              </widget>
             </item>
+            <item row="1" column="1">
+             <widget class="QComboBox" name="CB_embryoNames"/>
+            </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_13">
+              <property name="text">
+               <string>Max Time:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Embryo Name:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QLabel" name="label_31">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="3">
+             <widget class="QPushButton" name="Btn_stopPreprocess">
+              <property name="text">
+               <string>Stop Preprocess </string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QLabel" name="label_16">
+              <property name="text">
+               <string>Number Dictionary:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="label_15">
+              <property name="text">
+               <string>Lineage File:</string>
+              </property>
+             </widget>
+            </item>
             <item row="4" column="1">
              <widget class="QLineEdit" name="LE_reduceRatio"/>
+            </item>
+            <item row="4" column="3">
+             <widget class="QPushButton" name="Btn_runPreprocess">
+              <property name="text">
+               <string>Run Preprocess</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>um</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_7">
+              <property name="text">
+               <string>X-Y Resolution:   </string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="LE_rawFolder"/>
+            </item>
+            <item row="8" column="1">
+             <widget class="QLineEdit" name="LE_lineage"/>
+            </item>
+            <item row="10" column="0">
+             <widget class="QLabel" name="label_41">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -316,153 +323,10 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
           </item>
           <item>
            <layout class="QGridLayout" name="gridLayout_2">
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="LE_projectFolder_Seg"/>
-            </item>
-            <item row="9" column="2">
-             <widget class="QPushButton" name="pushButton">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="1">
-             <widget class="QLineEdit" name="LE_modelFile_Seg"/>
-            </item>
-            <item row="0" column="2">
-             <widget class="QPushButton" name="Btn_projectFolder_Seg">
-              <property name="text">
-               <string>Choose</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_19">
-              <property name="text">
-               <string>Max Time:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label_36">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="3">
-             <widget class="QPushButton" name="Btn_runSegmentation">
-              <property name="text">
-               <string>Run Segmentation</string>
-              </property>
-             </widget>
-            </item>
-            <item row="7" column="0">
-             <widget class="QLabel" name="label_35">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="0">
-             <widget class="QLabel" name="label_34">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="2">
-             <widget class="QPushButton" name="Btn_modelFile_Seg">
-              <property name="text">
-               <string>Choose</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="2">
-             <widget class="QLabel" name="label_32">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_18">
-              <property name="text">
-               <string>Embryo Names:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_22">
-              <property name="text">
-               <string>Model File:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_17">
-              <property name="text">
-               <string>Project Folder:   </string>
-              </property>
-             </widget>
-            </item>
-            <item row="6" column="1">
-             <widget class="QLineEdit" name="lineEdit"/>
-            </item>
-            <item row="8" column="2">
-             <widget class="QPushButton" name="pushButton_2">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="focusPolicy">
-               <enum>Qt::NoFocus</enum>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="LE_maxTime_Seg"/>
-            </item>
-            <item row="9" column="0">
-             <widget class="QLabel" name="label_37">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_21">
-              <property name="frameShape">
-               <enum>QFrame::NoFrame</enum>
-              </property>
-              <property name="text">
-               <string>Use Lineage?</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_20">
-              <property name="text">
-               <string>Batch Size:</string>
-              </property>
-             </widget>
-            </item>
             <item row="5" column="3">
              <widget class="QPushButton" name="Btn_stopSegmentation">
               <property name="text">
                <string>Stop Segmentation</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="2">
-             <widget class="QLabel" name="label_33">
-              <property name="text">
-               <string/>
               </property>
              </widget>
             </item>
@@ -485,14 +349,164 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
               </item>
              </widget>
             </item>
+            <item row="6" column="0">
+             <widget class="QLabel" name="label_34">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="3">
+             <widget class="QPushButton" name="Btn_runSegmentation">
+              <property name="text">
+               <string>Run Segmentation</string>
+              </property>
+             </widget>
+            </item>
+            <item row="8" column="2">
+             <widget class="QPushButton" name="pushButton_2">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="focusPolicy">
+               <enum>Qt::NoFocus</enum>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="LE_projectFolder_Seg"/>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="LE_maxTime_Seg"/>
+            </item>
+            <item row="2" column="2">
+             <widget class="QLabel" name="label_32">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QLineEdit" name="LE_modelFile_Seg"/>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="label_36">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QLineEdit" name="lineEdit_2"/>
+            </item>
             <item row="3" column="1">
              <widget class="QLineEdit" name="LE_batchSize_Seg"/>
+            </item>
+            <item row="9" column="2">
+             <widget class="QPushButton" name="pushButton">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="6" column="1">
+             <widget class="QLineEdit" name="lineEdit"/>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_17">
+              <property name="text">
+               <string>Project Folder:   </string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="0">
+             <widget class="QLabel" name="label_35">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
             </item>
             <item row="1" column="1">
              <widget class="QComboBox" name="CB_embryoNames_Seg"/>
             </item>
-            <item row="7" column="1">
-             <widget class="QLineEdit" name="lineEdit_2"/>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_18">
+              <property name="text">
+               <string>Embryo Names:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QLabel" name="label_33">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_22">
+              <property name="text">
+               <string>Model File:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_20">
+              <property name="text">
+               <string>Batch Size:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QPushButton" name="Btn_projectFolder_Seg">
+              <property name="text">
+               <string>Choose</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_19">
+              <property name="text">
+               <string>Max Time:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="2">
+             <widget class="QPushButton" name="Btn_modelFile_Seg">
+              <property name="text">
+               <string>Choose</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_21">
+              <property name="frameShape">
+               <enum>QFrame::NoFrame</enum>
+              </property>
+              <property name="text">
+               <string>Use Lineage?</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QLabel" name="label_37">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0">
+             <widget class="QLabel" name="label_42">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -573,28 +587,39 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
               </property>
              </widget>
             </item>
+            <item row="3" column="3">
+             <widget class="QPushButton" name="Btn_stopAnalysis">
+              <property name="text">
+               <string>Stop Analysis</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="2">
+             <widget class="QPushButton" name="Btn_rawFolder_Ana">
+              <property name="text">
+               <string>Choose</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_26">
+              <property name="text">
+               <string>Raw Folder:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="2">
+             <widget class="QPushButton" name="Btn_numberDict_Ana">
+              <property name="text">
+               <string>Choose</string>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="1">
+             <widget class="QLineEdit" name="lineEdit_5"/>
+            </item>
             <item row="3" column="1">
              <widget class="QLineEdit" name="LE_rawFolder_Ana"/>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_23">
-              <property name="text">
-               <string>Slice Num:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="8" column="0">
-             <widget class="QLabel" name="label_39">
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="QComboBox" name="CB_embryoNames_Ana"/>
-            </item>
-            <item row="5" column="1">
-             <widget class="QLineEdit" name="LE_projectFolder_Ana"/>
             </item>
             <item row="4" column="3">
              <widget class="QPushButton" name="Btn_runAll">
@@ -607,29 +632,28 @@ Segmentation and Analysis</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="2">
-             <widget class="QPushButton" name="Btn_numberDict_Ana">
+            <item row="5" column="1">
+             <widget class="QLineEdit" name="LE_projectFolder_Ana"/>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_25">
               <property name="text">
-               <string>Choose</string>
+               <string>Number Dictionary:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="7" column="1">
+             <widget class="QLineEdit" name="lineEdit_3"/>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_23">
+              <property name="text">
+               <string>Slice Num:</string>
               </property>
              </widget>
             </item>
             <item row="6" column="1">
              <widget class="QLineEdit" name="LE_lineage_Ana"/>
-            </item>
-            <item row="4" column="0">
-             <widget class="QLabel" name="label_27">
-              <property name="text">
-               <string>Embryo Names:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_26">
-              <property name="text">
-               <string>Raw Folder:</string>
-              </property>
-             </widget>
             </item>
             <item row="6" column="0">
              <widget class="QLabel" name="label_29">
@@ -638,39 +662,15 @@ Segmentation and Analysis</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="2">
-             <widget class="QPushButton" name="Btn_rawFolder_Ana">
-              <property name="text">
-               <string>Choose</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="2">
-             <widget class="QPushButton" name="Btn_projectFolder_Ana">
-              <property name="text">
-               <string>Choose</string>
-              </property>
-             </widget>
-            </item>
-            <item row="5" column="0">
-             <widget class="QLabel" name="label_28">
-              <property name="text">
-               <string>Project Folder:</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="3">
-             <widget class="QPushButton" name="Btn_stopAnalysis">
-              <property name="text">
-               <string>Stop Analysis</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLineEdit" name="LE_xyResolution_Ana"/>
-            </item>
             <item row="7" column="0">
              <widget class="QLabel" name="label_38">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="9" column="0">
+             <widget class="QLabel" name="label_40">
               <property name="text">
                <string/>
               </property>
@@ -682,12 +682,32 @@ Segmentation and Analysis</string>
             <item row="2" column="1">
              <widget class="QLineEdit" name="LE_numberDict_Ana"/>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_24">
+            <item row="5" column="0">
+             <widget class="QLabel" name="label_28">
               <property name="text">
-               <string>X-Y Resolution:</string>
+               <string>Project Folder:</string>
               </property>
              </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="label_27">
+              <property name="text">
+               <string>Embryo Names:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="LE_xyResolution_Ana"/>
+            </item>
+            <item row="8" column="0">
+             <widget class="QLabel" name="label_39">
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QComboBox" name="CB_embryoNames_Ana"/>
             </item>
             <item row="2" column="3">
              <widget class="QPushButton" name="Btn_runAnalysis">
@@ -696,28 +716,29 @@ Segmentation and Analysis</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_25">
+            <item row="8" column="1">
+             <widget class="QLineEdit" name="lineEdit_4"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_24">
               <property name="text">
-               <string>Number Dictionary:</string>
+               <string>X-Y Resolution:</string>
               </property>
              </widget>
             </item>
-            <item row="9" column="0">
-             <widget class="QLabel" name="label_40">
+            <item row="5" column="2">
+             <widget class="QPushButton" name="Btn_projectFolder_Ana">
+              <property name="text">
+               <string>Choose</string>
+              </property>
+             </widget>
+            </item>
+            <item row="10" column="0">
+             <widget class="QLabel" name="label_43">
               <property name="text">
                <string/>
               </property>
              </widget>
-            </item>
-            <item row="7" column="1">
-             <widget class="QLineEdit" name="lineEdit_3"/>
-            </item>
-            <item row="8" column="1">
-             <widget class="QLineEdit" name="lineEdit_4"/>
-            </item>
-            <item row="9" column="1">
-             <widget class="QLineEdit" name="lineEdit_5"/>
             </item>
            </layout>
           </item>
@@ -916,16 +937,10 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
    </property>
    <widget class="QMenu" name="menuBlank">
     <property name="enabled">
-     <bool>true</bool>
-    </property>
-    <property name="layoutDirection">
-     <enum>Qt::LeftToRight</enum>
+     <bool>false</bool>
     </property>
     <property name="title">
-     <string/>
-    </property>
-    <property name="toolTipsVisible">
-     <bool>false</bool>
+     <string>       </string>
     </property>
    </widget>
    <widget class="QMenu" name="menuFile">
