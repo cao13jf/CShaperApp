@@ -684,7 +684,6 @@ class Ui_MainWindow(object):
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_3), _translate("MainWindow", "Contact Surface"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_4), _translate("MainWindow", "3D View"))
         self.Function.setTabText(self.Function.indexOf(self.Result), _translate("MainWindow", "Result"))
-        self.menuBlank.setTitle(_translate("MainWindow", "       "))
         self.menuFile.setTitle(_translate("MainWindow", "File"))
         self.menuEdit.setTitle(_translate("MainWindow", "Edit"))
         self.menuRun.setTitle(_translate("MainWindow", "&Run"))

@@ -77,6 +77,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         self.render_window = self.vtkWidget.GetRenderWindow()
         self.render_window.AddRenderer(renderer)
         self.render_window.Render()
+        self.main_widget.lower()
         self.iren = self.render_window.GetInteractor()
 
         self.x = 1
