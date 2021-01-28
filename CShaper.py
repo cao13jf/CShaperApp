@@ -624,7 +624,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "CShaperAPP"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "CShaperApp"))
         self.label.setText(_translate("MainWindow", "Experimental Information"))
         self.label_11.setText(_translate("MainWindow", "Reduce Ratio:"))
         self.label_9.setText(_translate("MainWindow", "Z Resolution:"))
@@ -689,7 +689,7 @@ class Ui_MainWindow(object):
         self.menuAbout.setTitle(_translate("MainWindow", "About"))
         self.actionCopy_Right.setText(_translate("MainWindow", "Copy Right"))
         self.actionVersion.setText(_translate("MainWindow", "Online Document"))
-        self.actionHelp.setText(_translate("MainWindow", "About CShaperAPP"))
+        self.actionHelp.setText(_translate("MainWindow", "About CShaperApp"))
         self.actionRun_Preprocess.setText(_translate("MainWindow", "Run Preprocess"))
         self.actionRun_Segmentation.setText(_translate("MainWindow", "Run Segmentation"))
         self.actionRun_Analysis.setText(_translate("MainWindow", "Run Analysis"))
