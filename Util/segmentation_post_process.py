@@ -35,7 +35,7 @@ def post_process(process, config):
 
         file_names = glob.glob(os.path.join(membseg_path, one_embryo, '*.nii.gz'))
         file_names.sort()
-        for file_name in file_names[:config_segdata['max_time']]:
+        for file_name in file_names[:config_segdata['max_time']+1]:
             parameters.append([one_embryo, file_name, config])
 
     mpPool = mp.Pool(mp.cpu_count()-1)
