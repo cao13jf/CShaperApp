@@ -37,7 +37,7 @@ class ChildDialog(QDialog, Ui_Dialog):
         QDialog.__init__(self)
         self.child = Ui_Dialog()  # 子窗口的实例化
 
-        self.setWindowIcon(PyQt5.QtGui.QIcon('CShaperLogo.png'))
+        self.setWindowIcon(PyQt5.QtGui.QIcon('CShaperLogo.ico'))
         self.child.setupUi(self)
 
 
@@ -46,7 +46,7 @@ class MainForm(QMainWindow, Ui_MainWindow):
         super(MainForm, self).__init__()
 
         self.setWindowTitle('CShaper')
-        self.setWindowIcon(PyQt5.QtGui.QIcon('CShaperLogo.png'))
+        self.setWindowIcon(PyQt5.QtGui.QIcon('CShaperLogo.ico'))
         self.setupUi(self)
 
         self.lineEdit.setVisible(False)
