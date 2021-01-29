@@ -17,7 +17,7 @@
    </sizepolicy>
   </property>
   <property name="windowTitle">
-   <string>CShaperAPP</string>
+   <string>CShaperApp</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -991,7 +991,7 @@ font: 75 14pt &quot;MS Shell Dlg 2&quot;;</string>
   </action>
   <action name="actionHelp">
    <property name="text">
-    <string>About CShaperAPP</string>
+    <string>About CShaperApp</string>
    </property>
   </action>
   <action name="actionRun_Preprocess">
