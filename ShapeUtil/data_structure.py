@@ -42,21 +42,23 @@ def construct_celltree(nucleus_file, config):
     # read and combine all names from different acetrees
     ## Get cell number
     try:
-        with open(os.path.join(config["label_dict"], 'number_dictionary.txt'), 'rb') as f:
-            number_dictionary = pickle.load(f)
+        pd_number = pd.read_csv(config["number_dictionary"], names=["name", "label"])
+        number_dictionary = pd.Series(pd_number.label.values, index=pd_number.name).to_dict()
+
     except:
-        ace_files = glob.glob('./ShapeUtil/AceForLabel/*.csv')
-        cell_list = [x for x in cell_tree.expand_tree()]
-        for ace_file in ace_files:
-            ace_pd = pd.read_csv(os.path.join(ace_file))
-            cell_list = list(ace_pd.cell.unique()) + cell_list
-            cell_list = list(set(cell_list))
-        cell_list.sort()
-        number_dictionary = dict(zip(cell_list, range(1, len(cell_list)+1)))
-        with open(os.path.join(os.path.dirname(config["number_dictionary"]), 'number_dictionary.txt'), 'wb') as f:
-            pickle.dump(number_dictionary, f)
-        with open(os.path.join(os.path.dirname(config["number_dictionary"]), 'name_dictionary.txt'), 'wb') as f:
-            pickle.dump(dict(zip(range(1, len(cell_list)+1), cell_list)), f)
+        raise Exception("Name dictionary not found!")
+        # ace_files = glob.glob('./ShapeUtil/AceForLabel/*.csv')
+        # cell_list = [x for x in cell_tree.expand_tree()]
+        # for ace_file in ace_files:
+        #     ace_pd = pd.read_csv(os.path.join(ace_file))
+        #     cell_list = list(ace_pd.cell.unique()) + cell_list
+        #     cell_list = list(set(cell_list))
+        # cell_list.sort()
+        # number_dictionary = dict(zip(cell_list, range(1, len(cell_list)+1)))
+        # with open(os.path.join(os.path.dirname(config["number_dictionary"]), 'number_dictionary.txt'), 'wb') as f:
+        #     pickle.dump(number_dictionary, f)
+        # with open(os.path.join(os.path.dirname(config["number_dictionary"]), 'name_dictionary.txt'), 'wb') as f:
+        #     pickle.dump(dict(zip(range(1, len(cell_list)+1), cell_list)), f)
 
     max_time = len(os.listdir(os.path.join(config['seg_folder'], config['embryo_name'])))
     # max_time = config.get('max_time', 100)

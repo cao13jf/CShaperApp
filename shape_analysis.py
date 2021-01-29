@@ -43,7 +43,6 @@ def run_shape_analysis(process, config):
     acetree_file = config['acetree_file']
     cell_tree, max_time = construct_celltree(acetree_file, config)
     save_file_name = os.path.join(config['stat_folder'], config['embryo_name']+'_time_tree.txt')
-
     with open(save_file_name, 'wb') as f:
         pickle.dump(cell_tree, f)
     ## Parallel computing for the cell relation graph
