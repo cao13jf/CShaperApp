@@ -38,7 +38,8 @@ def post_process(process, config):
         for file_name in file_names[:config_segdata['max_time']+1]:
             parameters.append([one_embryo, file_name, config])
 
-    mpPool = mp.Pool(mp.cpu_count()-1)
+    # mpPool = mp.Pool(mp.cpu_count()-1)
+    mpPool = mp.Pool(2)
     for idx, _ in enumerate(tqdm(mpPool.imap_unordered(run_post, parameters), total=len(parameters), desc="Segment binary membrane to cells")):
         # TODO: 2 / 2 Process name: `Segment binary membrane to cells`;  current status: `idx`; final status: `len(parameters)`;
         process.emit('2/2 Segment binary membrane', idx, config_segdata['max_time'])
