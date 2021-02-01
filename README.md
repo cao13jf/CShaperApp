@@ -264,3 +264,5 @@ Resource/: resources that are required by CShaperApp
 <h2>4. Correspondence</h2><a name="correspondence"></a>
 <p>Please contact Jianfeng Cao at jfcao3-c(at)my.cityu.edu.hk or create an issue under the <a href="https://github.com/cao13jf/CShaperApp_PUB">source repository</a>.</p>
 
+<h2>License</h2>
+<p align="justify">The license can be found <a href="https://github.com/cao13jf/CShaperAPP/blob/lihan_test/LICENSE">here</a>.</p>
