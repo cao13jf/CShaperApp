@@ -262,7 +262,7 @@ Resource/: resources that are required by CShaperApp
 <p align="justify">This part provides a window for the user to view both the segmentation results and the collected information. All tables are exportable for further studies. In <code>3D</code> component, the user can inspect the segmentation results at each time point interactively. Please note that because all segmentations are preloaded here, this function might be computationally consuming when there are too many time points. Besides, CShaperApp concentrates on segmenting the embryo data, so we recommend the <a href="http://www.itksnap.org">itk-SNAP</a> to the user for user-friendly interface to view the results.</p>
 
 <h2>4. Correspondence</h2><a name="correspondence"></a>
-<p>Please contact Jianfeng Cao at jfcao3-c(at)my.cityu.edu.hk or create an issue under the <a href="https://github.com/cao13jf/CShaperApp_PUB">source repository</a>.</p>
+<p>Please contact Jianfeng Cao at jfcao3-c(at)my.cityu.edu.hk or create an issue under the <a href="https://github.com/cao13jf/CShaperApp">source repository</a>.</p>
 
 <h2>License</h2>
-<p align="justify">The license can be found <a href="https://github.com/cao13jf/CShaperAPP/blob/lihan_test/LICENSE">here</a>.</p>
+<p align="justify">The license can be found <a href="https://github.com/cao13jf/CShaperApp/blob/lihan_test/LICENSE">here</a>.</p>
