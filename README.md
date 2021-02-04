@@ -36,12 +36,14 @@
 <HR SIZE=10>
   1. Introduction
 </h2><a name="introduction"></a>
-<p align="justify">This document describes the usage of CShaperApp. CShaperApp is built based on the CShaper published in <I>Nature Communications</I>, which adopts the deep learning to segment the <I>C. elegans</I> emebyro at single-cell elevel (Cao JF <I>et al.</I>, <I>Nat. Commun</I>, 2020).</p>
 
-<p align="justify">Briefly speaking, CShaperApp is composed of four functional sections, including <B>Preprocess</B>, <B>Segmentation</B>, <B> Analysis</B> and  <B>Result</B>. While these four parts are designed to be excuted sequentially, they can also be used to process or anlayze the data individually if  data has already been prepared. In order to use this software efficiently, especially for <B>Segmentation</B>, GPU acceleration is preferred. However, all components has been tested successfully on basic desktop (RAM=16G, no GPU).</p>
+  <p align="justify">This document describes the usage of CShaperApp. CShaperApp is built based on the CShaper published in <I>Nature Communications</I>, which adopts the deep learning to segment the <I>C. elegans</I> emebyro at single-cell elevel (Cao JF <I>et al.</I>, <I>Nat. Commun</I>, 2020).</p>
 
+  <p align="justify">Briefly speaking, CShaperApp is composed of four functional sections, including <B>Preprocess</B>, <B>Segmentation</B>, <B> Analysis</B> and  <B>Result</B>. While these four parts are designed to be excuted sequentially, they can also be used to process or anlayze the data individually if  data has already been prepared. In order to use this software efficiently, especially for <B>Segmentation</B>, GPU acceleration is preferred. However, all components has been tested successfully on basic desktop (RAM=16G, no GPU).</p>
+
+<br/>
 <h2>2. Installation</h2><a name="installation"></a>
-<p align="justify">The user can download the installer of CShaperApp from this <a href="https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_my_cityu_edu_hk/Es0yP5jn-mlNjX2YtsXtp3QBPdztUrx4S5RB-5_i_a-9uQ?e=OqbbxC">link</a>. The pretrained model can be downloaded <a href="https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_my_cityu_edu_hk/EuMA-KgH6FxLhCNJvayV-T0BJDqHi87qX1Uvnxb6ctHrDg?download=1">here</a>. CShaperApp was tested on Windows 7 and Windows 10 (64 bit). For the user's reference, we list the time that CShaperApp takes to process the example dataset <a href="https://portland-my.sharepoint.com/:u:/g/personal/jfcao3-c_my_cityu_edu_hk/EdOYHmsTunJFvMzX1hhh24ABleMOoSRexF9Dr_eUbYvBjw?download=1">MembRaw</a>.</p>
+<p align="justify">The user can download the installer of CShaperApp from this <a href="https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_my_cityu_edu_hk/Es0yP5jn-mlNjX2YtsXtp3QBPdztUrx4S5RB-5_i_a-9uQ?e=OqbbxC">link</a>. The pretrained model and name dictionary can be downloaded as <a href="https://portland-my.sharepoint.com/:f:/g/personal/jfcao3-c_my_cityu_edu_hk/EuMA-KgH6FxLhCNJvayV-T0BJDqHi87qX1Uvnxb6ctHrDg?download=1">Resource</a> file. CShaperApp was tested on Windows 7 and Windows 10 (64 bit). For the user's reference, we list the time that CShaperApp takes to process the example dataset <a href="https://portland-my.sharepoint.com/:u:/g/personal/jfcao3-c_my_cityu_edu_hk/EdOYHmsTunJFvMzX1hhh24ABleMOoSRexF9Dr_eUbYvBjw?download=1">MembRaw</a>.</p>
 
 <p align="center">
   <table>
@@ -68,6 +70,8 @@
     </tr>
   </table>
 </p>
+
+<br/>
 <h2>3. Usage</h2><a name="usage"></a>
 <p align="justify">With the help of microscopy, fluorescent signals of nucleus and membrane are collected through two channels respectly. These images are saved slice by slice. <B>Preprocess</B> is used to compose these slices into a volume according to the user's config. Subsequently, <B>Segmentation</B> is used to segment these volumetric images. <B>Analysis</B> is designed to collect the biological information, such as volume and surface, from the segmentation result. Finally, <B>Result</B> can be used to inspect the segmentation results interactively.</p>
 
@@ -258,14 +262,15 @@ Resource/: resources that are required by CShaperApp
 </details>
 <p align="justify">The user can set all parameters in <B>Preprocess</B>, <B>Segmentation</B> and <B>Anlysis</B> once, and runs them together.</p>
 
-
 <h4>Results</h4>
 <p align="justify">Morphological information are saved to <code>StatShape</code>. These results can be either viewed in section <B>Result</B> or processed for different needs.</p>
 <h3>3.4 Result</h3><a name="usage_result"></a>
 <p align="justify">This part provides a window for the user to view both the segmentation results and the collected information. All tables are exportable for further studies. In <code>3D</code> component, the user can inspect the segmentation results at each time point interactively. Please note that because all segmentations are preloaded here, this function might be computationally consuming when there are too many time points. Besides, CShaperApp concentrates on segmenting the embryo data, so we recommend the <a href="http://www.itksnap.org">itk-SNAP</a> to the user for user-friendly interface to view the results.</p>
 
+<br/>
 <h2>4. Correspondence</h2><a name="correspondence"></a>
 <p>Please contact Jianfeng Cao at jfcao3-c(at)my.cityu.edu.hk or create an issue under the <a href="https://github.com/cao13jf/CShaperApp">source repository</a>.</p>
 
+<br/>
 <h2>License</h2>
 <p align="justify">The license can be found <a href="https://github.com/cao13jf/CShaperApp/blob/lihan_test/LICENSE">here</a>.</p>
