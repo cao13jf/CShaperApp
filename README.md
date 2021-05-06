@@ -269,7 +269,7 @@ Resource/: resources that are required by CShaperApp
 
 <br/>
 <h2>4. Correspondence</h2><a name="correspondence"></a>
-<p>Please contact Jianfeng Cao at jfcao3-c(at)my.cityu.edu.hk or create an issue under the <a href="https://github.com/cao13jf/CShaperApp">source repository</a>.</p>
+<p>Please contact Jianfeng Cao at jfcao3-c(at)my.cityu.edu.hk or create an issue under this source code repository.</p>
 
 <br/>
 <h2>License</h2>
