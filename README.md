@@ -1,6 +1,5 @@
 <p align="center"><img alt="Logo" src="https://github.com/cao13jf/CShaperApp/blob/master/CShaperLogo.png"></p>
 <h1 align="center"> Document of CShaperApp</h1>
-<p align="center">Authors: Jianfeng Cao, Lihan Hu, Zhongying Zhao and Hong Yan</p>
 <h2>
 
 <ol>
