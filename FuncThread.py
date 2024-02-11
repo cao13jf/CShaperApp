@@ -179,6 +179,7 @@ class SegmentationThread(QThread):
         self.flag = flag
 
     def test_cmap(self, process, config):
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         config_data = config['data']
         config_net = config.get('network', None)
         config_test = config['testing']
@@ -192,7 +193,7 @@ class SegmentationThread(QThread):
         #  construct network model
         # =============================================================
         model = EDTDMFNet(in_channels=1, n_first=32, conv_channels=64, groups=16, norm="in", out_class=1)
-        check_point = torch.load(config_net["model_file"])
+        check_point = torch.load(config_net["model_file"], map_location=device)
         from collections import OrderedDict
         new_state_dict = OrderedDict()
         for k, v in check_point["state_dict"].items():
@@ -200,6 +201,7 @@ class SegmentationThread(QThread):
                 name = k[7:]  # remove `module.`
             new_state_dict[name] = v
         model.load_state_dict(new_state_dict)
+        model.to(device)
 
         data_root = config_data['data_root'] if type(config_data['data_root']) is list else [config_data['data_root']]  # Save as list
         data_names = config_data.get('data_names', None)
@@ -235,6 +237,7 @@ class SegmentationThread(QThread):
                 process.emit("1/2 Extracting binary membrane", i, data_number)
                 x, nuc = data[0:2]  #
                 #  go through the network
+                x = x.to(device)
                 start_time = time.time()
                 pred_bin = model(x)
                 elapsed_time = time.time() - start_time
@@ -245,7 +248,10 @@ class SegmentationThread(QThread):
                     pred_bin = pred_bin.argmax(1)  # [channel, height, width, depth]
 
                 #  binary prediction
-                pred_bin = pred_bin.cpu().numpy()
+                if torch.cuda.is_available():
+                    pred_bin = pred_bin.cpu().numpy()
+                else:
+                    pred_bin = pred_bin.numpy()
                 pred_bin = pred_bin.squeeze()  # .transpose([1, 2, 0])  # from z, x, y to x, y ,z
                 pred_bin = resize(pred_bin.astype(float), test_set.size, mode='constant', cval=0, order=0, anti_aliasing=False)
                 save_file = os.path.join(save_folder, embryo_name, embryo_name + "_" + test_set.names[i].split(".")[0].split("_")[1] + "_segMemb.nii.gz")

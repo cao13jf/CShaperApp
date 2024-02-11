@@ -1,3 +1,4 @@
+import sys ; sys.setrecursionlimit(sys.getrecursionlimit() * 5)
 block_cipher = None
 
 
@@ -5,7 +6,7 @@ a = Analysis(
     ['CShaperApp.py'],
     pathex=['/opt/miniconda3/envs/cshapertf/lib', '/opt/miniconda3/envs/cshapertf/lib/python3.9/site-packages'],
     binaries=[],
-    datas=["CShaperLogo.ico"],
+    datas=[("CShaperLogo.ico", ".")],
     hiddenimports=["skimage.filters.edges"],
     hookspath=[],
     hooksconfig={},
